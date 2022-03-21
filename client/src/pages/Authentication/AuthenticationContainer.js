@@ -1,12 +1,26 @@
 
-import withPageWrapper from '../../hocs/withPageWrapper/withPageWrapper'
-
+import { withPageWrapper } from '../../hocs'
 import Authentication from './Authentication'
 
 const AuthenticationContainer = () => {
     const AuthenticationWithPageWrapper = withPageWrapper(Authentication)
 
-    return <AuthenticationWithPageWrapper />
+    const handleRegister = values => new Promise((resolve, reject) => {
+        setTimeout(() => {
+            console.log(values)
+            resolve('register')
+        }, 1000)
+    })
+
+    const handleLogin = values => new Promise((resolve, reject) => {
+        setTimeout(() => {
+            console.log(values)
+            resolve('login')
+        }, 1000)
+    })
+
+
+    return <AuthenticationWithPageWrapper onRegister={handleRegister} onLogin={handleLogin} />
     
 }
 

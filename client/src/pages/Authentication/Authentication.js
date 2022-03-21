@@ -1,27 +1,16 @@
 import { Segment } from 'semantic-ui-react'
 
-import LoginForm from './LoginForm'
-import RegistrationForm from './RegistrationForm'
+import { LoginForm, RegistrationForm } from './components'
+import styles from './AuthenticationStyles'
 
-const styles = { 
-    container: {
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    forms: {
-        display: 'flex',
-        justifyContent: 'center',
-    }
-}
-
-const Authentication = () => {
+const Authentication = ({ onRegister, onLogin }) => {
     return (
-        <div style={styles.container}>
+        <section style={styles.container}>
             <Segment secondary style={styles.forms}>
-                <RegistrationForm />
-                <LoginForm />
+                <RegistrationForm onRegister={onRegister} />
+                <LoginForm onLogin={onLogin} />
             </Segment>
-        </div>
+        </section>
     )
 }
 
