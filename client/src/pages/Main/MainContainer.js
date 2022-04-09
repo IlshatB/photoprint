@@ -3,8 +3,8 @@ import Main from './Main'
 
 const MainContainer = () => {
     const MainWithLayout = withLayout(Main)
-
-    return <MainWithLayout />
+    
+    return <MainWithLayout  />
 }
 
 export default MainContainer

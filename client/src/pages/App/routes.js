@@ -1,10 +1,10 @@
-import NotImplemented from "../NotImplemented/NotImplemented"
-
-import Authentication from '../Authentication/AuthenticationContainer'
+import NotImplemented from '../NotImplemented/NotImplemented'
 
 import Main from '../Main/MainContainer'
+import Delivery from '../Delivery/DeliveryContainer'
+import Cart from '../Cart/CartContainer'
 import Auth from '../Auth/AuthContainer'
-import Photobooks from "../Photobooks/PhotobooksContainer"
+import Photobooks from '../Photobooks/PhotobooksContainer'
 
 const routes =  [
     {
@@ -14,6 +14,14 @@ const routes =  [
     {
         path: '/home',
         element: <Main />,
+    },
+    {
+        path: '/delivery',
+        element: <Delivery />,
+    },
+    {
+        path: '/cart',
+        element: <Cart />,
     },
     {
         path: '/photobooks',
@@ -30,10 +38,6 @@ const routes =  [
                 path: '',
                 element: <NotImplemented />
             },
-            {
-                path: 'authentication',
-                element: <Authentication />
-            }, 
         ]
     },
 

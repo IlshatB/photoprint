@@ -1,6 +1,6 @@
-import { Button } from 'semantic-ui-react'
+import { withLayout } from '../../hocs'
 
-export default function NotImplemented({ children }) {
+const Empty = ({ children }) => {
     return (
         <div>
             <h1>Not implemented</h1>
@@ -8,3 +8,11 @@ export default function NotImplemented({ children }) {
         </div>
     )
 }
+
+const NotImplemented = () => {
+    const EmptyWithLayout = withLayout(Empty)
+
+    return <EmptyWithLayout />
+}
+
+export default NotImplemented

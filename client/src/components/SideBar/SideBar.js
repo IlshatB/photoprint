@@ -1,9 +1,8 @@
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
-import { Layout, Menu, Divider } from 'antd'
+import { Layout, Menu, Divider, Badge } from 'antd'
 import { 
-    LaptopOutlined, 
     BookFilled, 
     CalendarFilled, 
     PictureFilled, 
@@ -14,20 +13,42 @@ import {
     CarOutlined,
     ShoppingCartOutlined,
     UserOutlined,
+    ProfileOutlined,
 } from '@ant-design/icons';
 
-const Sidebar = () => {
-    const [collapsed, setCollapsed] = useState(false)
+import { isAuthenticated } from '../../helpers'
+import { useShoppingCart } from '../../hooks'
 
+const Sidebar = () => {
     const location = useLocation()
+    const { items, amounts: cartAmounts } = useShoppingCart()
+    const [collapsed, setCollapsed] = useState(false);
+    const [amounts, setAmounts] = useState(cartAmounts)
+
+
+    const handleCollapse = value => {
+        setCollapsed(value)
+
+        const content = document.querySelector('main.ant-layout-content')
+        const footer = document.querySelector('footer.ant-layout-footer')
+
+        if (document.body.clientWidth < 600 && !value) {
+            content.style.display = 'none';
+            footer.style.display = 'none';
+        }
+        else {
+            content.style.display = 'block';
+            footer.style.display = 'block';    
+        }
+    }
 
     return (
             <Layout.Sider
                 width={300}
                 collapsible 
                 collapsed={collapsed} 
-                onCollapse={setCollapsed}
-                breakpoint="md"
+                onCollapse={handleCollapse}
+                breakpoint="lg"
                 style={{ overflow: 'auto'}}
                 theme="light"
             >
@@ -46,17 +67,35 @@ const Sidebar = () => {
                             Доставка
                         </Link>
                     </Menu.Item>
-                    <Menu.Item key="/cart" icon={<ShoppingCartOutlined />}>
-                        <Link to="/cart">
-                            Корзина
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item key="/authentication" icon={<UserOutlined />}>
-                        <Link to="/authentication">
-                            Войти
-                        </Link>
-                    </Menu.Item>
-                    <Divider plain>УСЛУГИ</Divider>
+                    {isAuthenticated() && (
+                        <Menu.Item key="/cart" icon={<ShoppingCartOutlined />}>
+                            <Link to="/cart">
+                                Корзина
+                                <Badge count={amounts} overflowCount={9} size="small" offset={[15, 0]}>
+                                    <span style={{ visibility: 'hidden'}}>|</span>
+                                </Badge>
+                            </Link>
+                        </Menu.Item>    
+                    )}
+                    {isAuthenticated() && (
+                        <Menu.Item key="/authentication" icon={<ProfileOutlined />}>
+                            <Link to="/profile">
+                                Профиль
+                            </Link>
+                        </Menu.Item> 
+                    )}
+                    {!isAuthenticated() && (
+                        <Menu.Item key="/authentication" icon={<UserOutlined />}>
+                            <Link to="/authentication">
+                                Войти
+                            </Link>
+                        </Menu.Item>
+                    )}
+                    {collapsed ? <Menu.Divider /> : (
+                        <Menu.Item key="divider">
+                            <Divider plain>УСЛУГИ</Divider>
+                        </Menu.Item>   
+                    )}
                     <Menu.SubMenu 
                         key="/photobooks" 
                         icon={<BookFilled />}
@@ -153,7 +192,7 @@ const Sidebar = () => {
                         title="ФОТОСУВЕНИРЫ"
                     >
                         <Menu.SubMenu
-                            key="/perekidnoy"
+                            key="/forhomeandoffice"
                             title="ДЛЯ ДОМА И ОФИСА"
                         >
                             <Menu.Item key="/per_standart">Стандарт</Menu.Item>
@@ -161,7 +200,7 @@ const Sidebar = () => {
                             <Menu.Item key="/per_royal">Royal</Menu.Item>
                         </Menu.SubMenu>
                     </Menu.SubMenu>
-                    <Menu.SubMenu key="/kalendar" 
+                    <Menu.SubMenu key="/calendars" 
                         icon={<CalendarFilled />}
                         title="КАЛЕНДАРИ"
                     >
@@ -169,9 +208,9 @@ const Sidebar = () => {
                             key="/perekidnoy"
                             title="ПЕРЕКИДНОЙ"
                         >
-                            <Menu.Item key="/per_standart">Стандарт</Menu.Item>
-                            <Menu.Item key="/per_premium">Премиум</Menu.Item>
-                            <Menu.Item key="/per_royal">Royal</Menu.Item>
+                            <Menu.Item key="/perekidnoy_per_standart">Стандарт</Menu.Item>
+                            <Menu.Item key="/perekidnoy_per_premium">Премиум</Menu.Item>
+                            <Menu.Item key="/perekidnoy_per_royal">Royal</Menu.Item>
                         </Menu.SubMenu>
                         <Menu.SubMenu
                             key="/plakat"

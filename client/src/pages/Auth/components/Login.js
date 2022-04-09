@@ -1,43 +1,62 @@
 
-import { Form, Input, Button, Checkbox } from 'antd';
+import { Link } from 'react-router-dom'
+import { Form, Input, Button, Space  } from 'antd';
+import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { blue} from '@ant-design/colors'
 
-const Login = ({ onFinish, onFinishFailed }) => {
+const Login = ({ onFinish, onFinishFailed, toSignUp }) => {
     return (
         <Form
-            name="basic"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 16 }}
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
-            onFinishFailed={onFinishFailed}
-            autoComplete="off"
+        name="normal_login"
+        className="login-form"
+        initialValues={{
+          remember: true,
+        }}
+        onFinish={onFinish}
+      >
+        <Form.Item
+          name="email"
+          rules={[
+            {
+                type: 'email',
+                message: 'Неверный формат эл. почты',
+            },
+            {
+              required: true,
+              message: 'Введите адрес эл. почты',
+            },
+          ]}
         >
-            <Form.Item
-            label="Username"
-            name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
-            >
-            <Input />
-            </Form.Item>
-    
-            <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: 'Please input your password!' }]}
-            >
-            <Input.Password />
-            </Form.Item>
-    
-            <Form.Item name="remember" valuePropName="checked" wrapperCol={{ offset: 8, span: 16 }}>
-            <Checkbox>Remember me</Checkbox>
-            </Form.Item>
-    
-            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-            <Button type="primary" htmlType="submit">
-                Submit
-            </Button>
-            </Form.Item>
-        </Form>
+          <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Эл. почта" />
+        </Form.Item>
+        <Form.Item
+          name="password"
+          rules={[
+            {
+              required: true,
+              message: 'Введите пароль',
+            },
+          ]}
+        >
+          <Input
+            prefix={<LockOutlined color="secondary" className="site-form-item-icon" />}
+            type="password"
+            placeholder="Пароль"
+          />
+        </Form.Item>
+        <Form.Item>
+          <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+            Войти
+          </Button>
+          <Space size="small" style={{ marginTop: 8 }}>
+            <span>Или</span>
+            <span style={{ color: blue[4], cursor: 'pointer' }} onClick={toSignUp}>зарегистрироваться</span>
+          </Space>
+        </Form.Item>
+        <Link to="" style={{ color: blue[4] }}>
+            Забыли пароль?
+        </Link>
+      </Form>
     )
 }
 
