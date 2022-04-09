@@ -1,11 +1,18 @@
-import { useShoppingCart } from '../../hooks'
+// import { useShoppingCart } from '../../hooks'
+import { ShoppingCartProvider } from '../../providers'
 
 const Photobooks = () => {
-  const { onAdd } = useShoppingCart()
+  const { setItems } = ShoppingCartProvider.useContext()
 
-    const handleAddItem = id => {
-      onAdd(id, 1)
-    }
+  // const { onAdd } = useShoppingCart()
+
+  //   const handleAddItem = id => {
+  //     onAdd(id, 1)
+  //   }
+
+  const handleAddItem = id => {
+    setItems('add', { id, amount: 1 })
+  }
 
     return (
       <>

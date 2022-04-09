@@ -1,15 +1,15 @@
 import { BrowserRouter as Router } from 'react-router-dom'
 
-// import { MenuProvider } from '../../providers'
+import { ShoppingCartProvider } from '../../providers'
 
 import App from './App'
 
 export default function AppContainer() {
     return (
         <Router>
-            {/* <MenuProvider> */}
+            <ShoppingCartProvider>
                 <App />
-            {/* </MenuProvider> */}
+            </ShoppingCartProvider>
         </Router>
     )
 }

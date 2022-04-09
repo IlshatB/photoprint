@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 import { Layout, Menu, Divider, Badge } from 'antd'
@@ -17,14 +17,14 @@ import {
 } from '@ant-design/icons';
 
 import { isAuthenticated } from '../../helpers'
-import { useShoppingCart } from '../../hooks'
+
+import { ShoppingCartProvider } from '../../providers'
 
 const Sidebar = () => {
     const location = useLocation()
-    const { items, amounts: cartAmounts } = useShoppingCart()
-    const [collapsed, setCollapsed] = useState(false);
-    const [amounts, setAmounts] = useState(cartAmounts)
+    const { amounts } = ShoppingCartProvider.useContext()
 
+    const [collapsed, setCollapsed] = useState(false);
 
     const handleCollapse = value => {
         setCollapsed(value)

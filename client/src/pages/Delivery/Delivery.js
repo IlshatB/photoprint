@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Row, Col, Card, Collapse, Typography, Image, Avatar, Divider } from 'antd'
+import { Row, Col, Card, Collapse, Typography, Image, Avatar } from 'antd'
 import { ClockCircleOutlined, DropboxOutlined } from '@ant-design/icons'
 import { orange, cyan } from '@ant-design/colors'
 

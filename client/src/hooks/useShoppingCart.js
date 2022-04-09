@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState } from "react"
 
 const isInCart = (items, id) => {
     return items.some(i => i.id === id)
