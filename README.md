@@ -7,6 +7,8 @@
 # Работа с клиентом
 **Для запуска CRA сервера локально перейдите в терминал и введите следующие команды:**
 ```
+git checkout master
+git pull origin master
 cd client
 npm i
 npm start
