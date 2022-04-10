@@ -12,7 +12,7 @@ const gridCellStyles = {
 const Photobooks = ({ onAddItem }) => {
     return (
       <>
-        <Row gutter={[64, 64]} type="flex">
+        <Row gutter={[{ xl: 32, xll: 64 }, 64]} type="flex">
           {photoBooks.map(pb => (
             <Col sm={24} lg={12} xl={8} key={pb.id}>
               <Card
@@ -22,7 +22,7 @@ const Photobooks = ({ onAddItem }) => {
                 <Card.Grid style={{ width: '100%' }} hoverable={false}>
                   <Card.Meta title={pb.title} description={pb.description} />
                 </Card.Grid>
-                  <Card.Grid style={gridCellStyles}>
+                  <Card.Grid style={gridCellStyles} hoverable={false}>
                     <Typography.Paragraph type="primary">
                       {`от ${pb.price} руб`}
                     </Typography.Paragraph>
@@ -30,7 +30,7 @@ const Photobooks = ({ onAddItem }) => {
                       {`Срок изготовления: ${getTimeByString(pb.productionTime)}`}
                     </Typography.Text>
                   </Card.Grid>
-                  <Card.Grid style={{ ...gridCellStyles, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Card.Grid style={{ ...gridCellStyles, display: 'flex', justifyContent: 'center', alignItems: 'center' }} hoverable={false}>
                       <Button type="primary" size="medium" onClick={() => onAddItem(pb.id)} >
                         В корзину
                       </Button>
