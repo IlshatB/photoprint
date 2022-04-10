@@ -11,6 +11,7 @@ const PhotobooksContainer = () => {
     }
 
     const PhotobooksWithLayout = withLayout(Photobooks)
+    
     const paths = [
         { value: 'Главная', url: '/home' },
         { value: 'Фотокниги', url: '/photobooks' },

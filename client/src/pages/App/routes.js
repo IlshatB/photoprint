@@ -1,10 +1,15 @@
-import NotImplemented from '../NotImplemented/NotImplemented'
-
 import Main from '../Main/MainContainer'
 import Delivery from '../Delivery/DeliveryContainer'
 import Cart from '../Cart/CartContainer'
 import Auth from '../Auth/AuthContainer'
+import Profile from '../Profile/ProfileContainer'
+
+/** страницы товаров */
 import Photobooks from '../Photobooks/PhotobooksContainer'
+
+/** вспомогательные компоненты */
+import NotImplemented from '../NotImplemented/NotImplemented'
+import AuthGuard from '../../components/AuthGuard/AuthGuard'
 
 const routes =  [
     {
@@ -21,24 +26,27 @@ const routes =  [
     },
     {
         path: '/cart',
-        element: <Cart />,
+        element: (
+            <AuthGuard>
+                <Cart />
+            </AuthGuard>
+        ),
     },
     {
         path: '/photobooks',
         element: <Photobooks />,
     },
     {
-        path: 'authentication',
+        path: '/authentication',
         element: <Auth />,
     },
     {
         path: '/profile',
-        children: [
-            {
-                path: '',
-                element: <NotImplemented />
-            },
-        ]
+        element: (
+            <AuthGuard>
+                <Profile />
+            </AuthGuard>
+        ),
     },
 
 ]

@@ -2,8 +2,6 @@ import { Row, Col, Card, Typography, Button } from 'antd'
 
 import { photoBooks, getTimeByString } from '../../helpers'
 
-import photobook from '../../assets/photobooks/photoBook_1000x1000.jpg'
-
 const gridCellStyles = {
   width: '50%',
   height: '170px',
@@ -11,20 +9,19 @@ const gridCellStyles = {
 
 const Photobooks = ({ onAddItem }) => {
     return (
-      <>
         <Row gutter={[{ xl: 32, xll: 64 }, 64]} type="flex">
           {photoBooks.map(pb => (
             <Col sm={24} lg={12} xl={8} key={pb.id}>
               <Card
                 hoverable
-                cover={<img alt="example" src={photobook} />}
+                cover={<img alt="example" src={pb.image} />}
               >
                 <Card.Grid style={{ width: '100%' }} hoverable={false}>
                   <Card.Meta title={pb.title} description={pb.description} />
                 </Card.Grid>
                   <Card.Grid style={gridCellStyles} hoverable={false}>
                     <Typography.Paragraph type="primary">
-                      {`от ${pb.price} руб`}
+                      {`${pb.price} руб`}
                     </Typography.Paragraph>
                     <Typography.Text type="secondary">
                       {`Срок изготовления: ${getTimeByString(pb.productionTime)}`}
@@ -39,9 +36,7 @@ const Photobooks = ({ onAddItem }) => {
             </Col>
           ))}
         </Row>
-      </>
-
-)
+    )
 }
 
 export default Photobooks

@@ -18,11 +18,9 @@ const Auth = () => {
     const navigate = useNavigate()
 
     const handleLogin = values => {
-        console.log(values)
-
         //** Replace with logic for BE */
         const jwt = sign(values, 'secret')
-        console.log(jwt)
+
         setUser(jwt)
         navigate('/home')
     }

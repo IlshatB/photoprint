@@ -1,4 +1,6 @@
 import { withLayout } from '../../hocs'
+
+import Authorize from './components/Authorize'
 import Auth from './Auth'
 
 const AuthContainer = () => {
@@ -8,3 +10,5 @@ const AuthContainer = () => {
 }
 
 export default AuthContainer
+
+AuthContainer.Authorize = Authorize
