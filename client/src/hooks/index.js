@@ -1,7 +1,9 @@
 import useShoppingCart from './useShoppingCart'
-import useCurrentUser from './useCurrentUser'
+import useCurrentClient from './useCurrentClient'
+import useCart from './useCart'
 
 export {
     useShoppingCart,
-    useCurrentUser,
+    useCurrentClient,
+    useCart,
 }

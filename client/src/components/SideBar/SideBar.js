@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Layout, Menu, Divider, Badge } from 'antd'
 import { 
@@ -14,14 +14,19 @@ import {
     ShoppingCartOutlined,
     UserOutlined,
     ProfileOutlined,
+    LogoutOutlined,
 } from '@ant-design/icons';
 
-import { isAuthenticated } from '../../helpers'
-
 import { ShoppingCartProvider } from '../../providers'
+import { useCurrentClient } from '../../hooks'
+import { exitClient } from '../../helpers'
+
+import './sidebar.css'
 
 const Sidebar = () => {
     const location = useLocation()
+    const navigate = useNavigate()
+    const { isAuthenticated } = useCurrentClient()
     const { amounts } = ShoppingCartProvider.useContext()
 
     const [collapsed, setCollapsed] = useState(false);
@@ -40,6 +45,11 @@ const Sidebar = () => {
             content.style.display = 'block';
             footer.style.display = 'block';    
         }
+    }
+
+    const handleExit = () => {
+        exitClient()
+        navigate('/home')
     }
 
     return (
@@ -67,7 +77,7 @@ const Sidebar = () => {
                             Доставка
                         </Link>
                     </Menu.Item>
-                    {isAuthenticated() && (
+                    {isAuthenticated && (
                         <Menu.Item key="/cart" icon={<ShoppingCartOutlined />}>
                             <Link to="/cart">
                                 Корзина
@@ -77,14 +87,19 @@ const Sidebar = () => {
                             </Link>
                         </Menu.Item>    
                     )}
-                    {isAuthenticated() && (
+                    {isAuthenticated && (
                         <Menu.Item key="/profile" icon={<ProfileOutlined />}>
                             <Link to="/profile">
                                 Профиль
                             </Link>
                         </Menu.Item> 
                     )}
-                    {!isAuthenticated() && (
+                    {isAuthenticated && (
+                        <Menu.Item key="/exit" danger id="ant-menu-item_exit" icon={<LogoutOutlined />} onClick={handleExit}>
+                            Выйти
+                        </Menu.Item> 
+                    )}
+                    {!isAuthenticated && (
                         <Menu.Item key="/authentication" icon={<UserOutlined />}>
                             <Link to="/authentication">
                                 Войти

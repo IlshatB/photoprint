@@ -1,10 +1,11 @@
 
-import { isAuthenticated } from '../../helpers'
+import { useCurrentClient} from '../../hooks'
 
 import Auth from '../../pages/Auth/AuthContainer'
 
 const AuthGuard = ({ children }) => {
-    return isAuthenticated() ? children : <Auth.Authorize />
+    const { isAuthenticated } = useCurrentClient()
+    return isAuthenticated ? children : <Auth.Authorize />
 }
 
 export default AuthGuard

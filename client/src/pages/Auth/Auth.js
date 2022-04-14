@@ -1,29 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom'
 import { Tabs, Row, Col } from 'antd';
-
-/** Remove after BE implementation */
-import sign from 'jwt-encode'
-
-import { setUser } from '../../helpers'
 
 import Login from './components/Login';
 import Signup from './components/Signup';
 
 import styles from './AuthStyles'
 
-const Auth = () => {
+const Auth = ({ onLogin, onSignup }) => {
     const [key, setkey] = useState('login')
-
-    const navigate = useNavigate()
-
-    const handleLogin = values => {
-        //** Replace with logic for BE */
-        const jwt = sign(values, 'secret')
-
-        setUser(jwt)
-        navigate('/home')
-    }
 
     return (
         <section style={styles.container}>
@@ -32,10 +16,10 @@ const Auth = () => {
                     <Col xs={22} sm={20} md={16} lg={8}>
                         <Tabs defaultActiveKey={key} activeKey={key} onChange={setkey}>
                             <Tabs.TabPane tab="Авторизация" key="login">
-                                <Login toSignUp={() => setkey('signup')} onFinish={handleLogin}  />
+                                <Login toSignUp={() => setkey('signup')} onLogin={onLogin}  />
                             </Tabs.TabPane>
                             <Tabs.TabPane tab="Регистрация" key="signup">
-                                <Signup toLogIn={() => setkey('login')} />
+                                <Signup toLogIn={() => setkey('login')} onSignup={onSignup} />
                             </Tabs.TabPane>
                         </Tabs>                
                     </Col>

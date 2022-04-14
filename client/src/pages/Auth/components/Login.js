@@ -4,7 +4,7 @@ import { Form, Input, Button, Space  } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { blue} from '@ant-design/colors'
 
-const Login = ({ onFinish, onFinishFailed, toSignUp }) => {
+const Login = ({ onLogin, onFinishFailed, toSignUp }) => {
     return (
         <Form
         name="normal_login"
@@ -12,7 +12,7 @@ const Login = ({ onFinish, onFinishFailed, toSignUp }) => {
         initialValues={{
           remember: true,
         }}
-        onFinish={onFinish}
+        onFinish={onLogin}
       >
         <Form.Item
           name="email"
