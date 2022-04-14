@@ -28,6 +28,4 @@ if (process.env.NODE_ENV === 'production') {
 mongoose.connect(keys.MONGO_URI, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
-    // useCreateIndex: true,
-    // useFindAndModify: false
 }).then(() => app.listen(PORT, () => console.log(`The server is running on port ${PORT}`)));
