@@ -1,4 +1,4 @@
-** Деплой проекта: **
+**Деплой проекта:**
 https://photoprint-node.herokuapp.com
 
 # Структура
