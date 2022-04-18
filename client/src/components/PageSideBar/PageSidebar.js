@@ -21,9 +21,9 @@ import { ShoppingCartProvider } from '../../providers'
 import { useCurrentClient } from '../../hooks'
 import { exitClient } from '../../helpers'
 
-import './sidebar.css'
+import './pageSideBar.css'
 
-const Sidebar = () => {
+const PageSideBar = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const { isAuthenticated } = useCurrentClient()
@@ -258,5 +258,5 @@ const Sidebar = () => {
     )
 }
 
-export default Sidebar
+export default PageSideBar
 

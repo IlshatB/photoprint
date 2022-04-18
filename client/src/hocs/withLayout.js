@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Layout, Typography, Divider } from 'antd'
 
-import Sidebar from '../components/Sidebar/Sidebar'
+import PageSideBar from '../components/PageSideBar/PageSidebar'
 
 const withLayout = Component => ({ title = '', paths = [],  ...rest }) => {
     return (
        <Layout style={{ minHeight: '100%' }}>
             <Layout hasSider style={{height: '100%'}}>
-                <Sidebar />
+                <PageSideBar />
                 <Layout style={{minHeight: '100%'}}>
                     <Layout.Content style={{height: '100%', padding: '0 32px' }}>
                         {title && <Typography.Title level={2}>{title}</Typography.Title>}
