@@ -16,7 +16,7 @@ const AuthContainer = () => {
             setClient(data.token)
             navigate('/home')
         } catch (e) {
-            console.log(e)
+            return Promise.reject(e.response.data)
         }
     }
 
@@ -29,7 +29,7 @@ const AuthContainer = () => {
             setClient(data.token)
             navigate('/home')
         } catch (e) {
-            console.log(e)
+            return Promise.reject(e.response.data)
         }
     }
 

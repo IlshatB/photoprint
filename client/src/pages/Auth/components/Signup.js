@@ -3,18 +3,41 @@ import { Form, Input, Button, Space } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { blue} from '@ant-design/colors'
 
-const Signup = ({ onSignup, onFinishFailed, toLogIn }) => {
+const Signup = ({ onSignup, toLogIn }) => {
+    const [form] = Form.useForm()
+
     return (
         <Form
-        name="normal_login"
-        className="login-form"
+        form={form}
+        name='signup_form'
+        className='login-form'
         initialValues={{
           remember: true,
         }}
-        onFinish={onSignup}
+        onFinish={values => {
+          onSignup(values)
+            .catch(error => {
+              if (error.includes('Пользователь существует')) { 
+                form.setFields([
+                  {
+                    name: 'email',
+                    errors: [error]
+                  },
+                  {
+                    name: 'password',
+                    value: '',
+                  },
+                  {
+                    name: 'confirm',
+                    value: '',
+                  },
+                ])
+              }
+            })
+        }}
       >
         <Form.Item
-          name="email"
+          name='email'
           rules={[
             {
                 type: 'email',
@@ -26,10 +49,10 @@ const Signup = ({ onSignup, onFinishFailed, toLogIn }) => {
             },
           ]}
         >
-          <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Эл. почта" />
+          <Input prefix={<UserOutlined className='site-form-item-icon' />} placeholder='Эл. почта' />
         </Form.Item>
         <Form.Item
-          name="password"
+          name='password'
           rules={[
             {
               required: true,
@@ -38,13 +61,13 @@ const Signup = ({ onSignup, onFinishFailed, toLogIn }) => {
           ]}
         >
           <Input.Password
-            prefix={<LockOutlined color="secondary" className="site-form-item-icon" />}
-            type="password"
-            placeholder="Пароль"
+            prefix={<LockOutlined color='secondary' className='site-form-item-icon' />}
+            type='password'
+            placeholder='Пароль'
           />
         </Form.Item>
         <Form.Item
-        name="confirm"
+        name='confirm'
         dependencies={['password']}
         hasFeedback
         rules={[
@@ -63,18 +86,18 @@ const Signup = ({ onSignup, onFinishFailed, toLogIn }) => {
           }),
         ]}
       >
-        <Input
-            prefix={<LockOutlined color="secondary" className="site-form-item-icon" />} 
-            placeholder="Подтвердите пароль" 
+        <Input.Password
+            prefix={<LockOutlined color='secondary' className='site-form-item-icon' />} 
+            placeholder='Подтвердите пароль' 
         />
       </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit">
+          <Button type='primary' htmlType='submit'>
             Зарегистрироваться
           </Button>
         </Form.Item>
         <Form.Item>
-            <Space size="small" style={{ marginTop: 8 }}>
+            <Space size='small' style={{ marginTop: 8 }}>
                 <span>Есть аккаунт?</span>
                 <span style={{ color: blue[4], cursor: 'pointer' }} onClick={toLogIn}>войти</span>
           </Space>
