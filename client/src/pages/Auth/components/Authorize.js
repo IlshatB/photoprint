@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Row, Col, Typography } from "antd"
+import { Typography } from "antd"
 
 import { withLayout } from '../../../hocs'
 
