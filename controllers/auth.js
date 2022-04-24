@@ -1,26 +1,26 @@
-const Client = require('../models/Client');
-const ErrorResponse = require('../utils/errorResponse');
-const keys = require('../config/keys');
+const Client = require('../models/Client')
+const ErrorResponse = require('../utils/errorResponse')
+const keys = require('../config/keys')
 
 exports.signUp = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body
     try {
         const client = await Client.create({
             email, password
         })
-        sendToken(client, 201, res);
-    } catch(e) {
+        sendToken(client, 201, res)
+    } catch (e) {
         if (e.message.includes('duplicate key error collection')) {
-            return res.status(409).send('Пользователь существует');
+            return res.status(409).send('Пользователь существует')
         }
 
         next(e)
     }
-};
+}
 
 exports.signIn = async (req, res, next) => {
-    const { email, password } = req.body;
-    if (!email || !password) return next(new ErrorResponse("Пожалуйста введите эл.почту или пароль", 400));
+    const { email, password } = req.body
+    if (!email || !password) return next(new ErrorResponse("Пожалуйста введите эл.почту или пароль", 400))
     
     try {
         const client = await Client.findOne({ email }).select("+password")
@@ -33,18 +33,18 @@ exports.signIn = async (req, res, next) => {
             return res.status(401).send('Неверный пароль')
         }
 
-       sendToken(client, 200, res);
-    } catch(e) {
-        next(e);
+       sendToken(client, 200, res)
+    } catch (e) {
+        next(e)
     }
-};
+}
 
 
 const sendToken = (client, statusCode, res) => {
-    const token = client.getSignedToken();
+    const token = client.getSignedToken()
     res.status(statusCode).json({
         success: true, 
         token,
         client
-    });
+    })
 }
