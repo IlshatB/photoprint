@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Row, Col, Card, Typography, Button, notification } from 'antd'
 
 import { useCurrentClient } from '../../hooks'
@@ -36,15 +37,16 @@ const Photobooks = ({ onAddItem }) => {
         <Row gutter={[{ lg: 32,  xl: 32, xxl: 64 }, 64]} type="flex">
           {photoBooks.map(pb => (
             <Col sm={24} lg={12} xl={8} key={pb.id} >
-              <Card
-                hoverable
-                cover={<img alt={pb.title} src={pb.image} />}
-                style={{ height: "100%", display: 'flex', flexDirection: 'column' }}
-                id="card-item"
-              >
-                <div style={{ flexGrow: 1 }}>
-                  <Card.Meta title={pb.title} description={pb.description} />
-                </div>
+              <Link to={pb.id}>
+                <Card
+                  hoverable
+                  cover={<img alt={pb.title} src={pb.image} />}
+                  style={{ height: "100%", display: 'flex', flexDirection: 'column' }}
+                  id="card-item"
+                >
+                  <div style={{ flexGrow: 1 }}>
+                    <Card.Meta title={pb.title} description={pb.description} />
+                  </div>
                   <div style={{ display: 'flex', justifyContent:"space-between", marginTop: '16px'}}>
                     <div>
                       <Typography.Paragraph type="primary">
@@ -60,7 +62,8 @@ const Photobooks = ({ onAddItem }) => {
                         </Button>
                     </div>
                   </div>
-              </Card>
+              </Card>              
+              </Link>
             </Col>
           ))}
         </Row>
