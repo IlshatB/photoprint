@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { setClient } from '../../helpers'
 
 import { loginClient } from '../../store/client/actions'
 
@@ -19,7 +18,6 @@ const AuthContainer = () => {
     const handleLogin = async values => {
         try {
             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
-            setClient(data.token)
             dispatch(loginClient(data.token))
             navigate('/home')
         } catch (e) {
@@ -33,7 +31,6 @@ const AuthContainer = () => {
         try {
             if (password !== confirm) throw new Error('Пароли не совпадают')
             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
-            setClient(data.token)
             dispatch(loginClient(data.token))
 
             navigate('/home')

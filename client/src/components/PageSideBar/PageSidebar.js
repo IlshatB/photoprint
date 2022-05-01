@@ -18,9 +18,7 @@ import {
     LogoutOutlined,
 } from '@ant-design/icons'
 
-import { ShoppingCartProvider } from '../../providers'
 import { useCurrentClient } from '../../hooks'
-import { exitClient } from '../../helpers'
 
 import './pageSideBar.css'
 
@@ -57,7 +55,7 @@ const PageSideBar = () => {
     }
 
     const handleExit = () => {
-        exitClient()
+        localStorage.clear()
         navigate('/home')
     }
 
