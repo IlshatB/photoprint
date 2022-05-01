@@ -1,6 +1,6 @@
 
-import { Form, Input, Button, Space } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Space } from 'antd'
+import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { blue} from '@ant-design/colors'
 
 const Signup = ({ onSignup, toLogIn }) => {
@@ -78,10 +78,10 @@ const Signup = ({ onSignup, toLogIn }) => {
           ({ getFieldValue }) => ({
             validator(_, value) {
               if (!value || getFieldValue('password') === value) {
-                return Promise.resolve();
+                return Promise.resolve()
               }
 
-              return Promise.reject(new Error('Пароли не совпадают'));
+              return Promise.reject(new Error('Пароли не совпадают'))
             },
           }),
         ]}

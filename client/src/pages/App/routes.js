@@ -84,6 +84,14 @@ const routes =  [
         element: <Auth />,
     },
     {
+        path: '/authentication/forgot-password',
+        element: <Auth.ForgotPassword />,
+    },
+    {
+        path: '/authentication/reset/:token',
+        element: <Auth.Reset />,
+    },
+    {
         path: '/profile',
         children: [
             {

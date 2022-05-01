@@ -23,6 +23,10 @@ const ClientSchema = new mongoose.Schema({
     cart: [
         { 
             amount: Number,
+            characteristics: [{
+                title: String,
+                value: String,
+            }],
             good: {type: mongoose.Schema.Types.ObjectId, ref: "Good"}
         }
     ],

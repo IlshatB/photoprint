@@ -7,7 +7,9 @@ import { setClient } from '../../helpers'
 
 import { loginClient } from '../../store/client/actions'
 
+import ForgotPassword from './components/ForgotPassword'
 import Authorize from './components/Authorize'
+import Reset from './components/Reset'
 import Auth from './Auth'
 
 const AuthContainer = () => {
@@ -46,4 +48,6 @@ const AuthContainer = () => {
 
 export default AuthContainer
 
+AuthContainer.ForgotPassword = ForgotPassword
 AuthContainer.Authorize = Authorize
+AuthContainer.Reset = Reset
