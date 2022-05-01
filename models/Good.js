@@ -9,6 +9,10 @@ const GoodSchema = new mongoose.Schema({
         type: String,
         required: [true, "Введите название"],
     },
+    subDescription: {
+        type: String,
+        required: [true, "Введите краткое описание"],
+    },
     description: {
         type: String,
         required: [true, "Введите описание"],
@@ -17,9 +21,12 @@ const GoodSchema = new mongoose.Schema({
         type: Number,
         required: [true, "Укажите цену"],
     },
+    images: [String],
     productionTime: String,
-    sizes: String,
+    size: String,
+    sizes: [String],
     type: String,
+    sale: Number,
 })
 
 module.exports =  mongoose.model('Good', GoodSchema)

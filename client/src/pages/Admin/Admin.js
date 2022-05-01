@@ -1,57 +1,14 @@
-import { Form, Input, Button  } from 'antd'
-import { UserOutlined, LockOutlined } from '@ant-design/icons'
+import { Link } from 'react-router-dom'
+import { Button } from 'antd'
 
-
-const Admin = ({ onCreate }) => {
-    const [form] = Form.useForm()
-
-
+const Admin = () => {
     return (
-        <Form
-        form={form}
-        name='login_form'
-        className='login-form'
-        initialValues={{
-          remember: true,
-        }}
-        onFinish={onCreate}
-      >
-        <Form.Item
-          name='email'
-          rules={[
-            {
-                type: 'email',
-                message: 'Неверный формат эл. почты',
-            },
-            {
-              required: true,
-              message: 'Введите адрес эл. почты',
-            },
-          ]}
-        >
-          <Input prefix={<UserOutlined className='site-form-item-icon' />} placeholder='Эл. почта' />
-        </Form.Item>
-        <Form.Item
-          name='password'
-          rules={[
-            {
-              required: true,
-              message: 'Введите пароль',
-            },
-          ]}
-        >
-          <Input
-            prefix={<LockOutlined color='secondary' className='site-form-item-icon' />}
-            type='password'
-            placeholder='Пароль'
-          />
-        </Form.Item>
-        <Form.Item>
-          <Button type='primary' htmlType='submit' style={{ width: '100%' }}>
-            Создать
-          </Button>
-        </Form.Item>
-      </Form>
+      <div>
+          <Link to="/goods/new">
+              <Button type="primary" onClick={e => e.stopPropagation()}>Новая услуга / товар</Button>        
+          </Link>
+      </div>
+
     )
     
 }

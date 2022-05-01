@@ -20,6 +20,12 @@ const ClientSchema = new mongoose.Schema({
         minlength: 6,
         select: false
     },
+    cart: [
+        { 
+            amount: Number,
+            good: {type: mongoose.Schema.Types.ObjectId, ref: "Good"}
+        }
+    ],
     resetPasswordToken: String,
     resetPasswordExpire: Date
 });

@@ -1,19 +1,24 @@
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
 import { setClient } from '../../helpers'
+
+import { loginClient } from '../../store/client/actions'
 
 import Authorize from './components/Authorize'
 import Auth from './Auth'
 
 const AuthContainer = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const handleLogin = async values => {
         try {
             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
             setClient(data.token)
+            dispatch(loginClient(data.token))
             navigate('/home')
         } catch (e) {
             return Promise.reject(e.response.data)
@@ -27,6 +32,8 @@ const AuthContainer = () => {
             if (password !== confirm) throw new Error('Пароли не совпадают')
             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
             setClient(data.token)
+            dispatch(loginClient(data.token))
+
             navigate('/home')
         } catch (e) {
             return Promise.reject(e.response.data)

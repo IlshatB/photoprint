@@ -1,2 +1,2 @@
-export const FETCH_CLIENT = 'FETCH_CLIENT'
 export const UPDATE_CLIENT = 'UPDATE_CLIENT'
+export const UPDATE_CART = 'UPDATE_CART'

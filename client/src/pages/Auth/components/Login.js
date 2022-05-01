@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom'
-import { Form, Input, Button, Space  } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Space  } from 'antd'
+import { UserOutlined, LockOutlined } from '@ant-design/icons'
 import { blue} from '@ant-design/colors'
 
 const Login = ({ onLogin, toSignUp }) => {

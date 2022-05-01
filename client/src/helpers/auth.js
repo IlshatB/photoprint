@@ -3,7 +3,7 @@ export const setUser = token => {
     localStorage.setItem('authToken', token)
 }
 
-export const setClient= token => {
+export const setClient = token => {
     localStorage.setItem('authToken', token)
 
 }

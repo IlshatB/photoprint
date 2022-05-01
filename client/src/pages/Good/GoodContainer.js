@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
+import { getCategoryTitle } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import Good from './Good'
@@ -12,14 +13,16 @@ const GoodContainer = () => {
     const location = useLocation()
 
     const [good, setGood] = useState()
+    const [loading, setLoading] = useState()
     const [error, setError] = useState()
 
     useEffect(() => {
         async function fetchData() {
+            setLoading(true)
             try {
                 const { data } = await axios.get(`/api/goods/fetch/good/${goodId}`, { headers: { "Content-Type": "application/json" } })
-                console.log(data)
                 setGood(data.good)
+                setTimeout(() => setLoading(false), 500)
             } catch (e) {
                 setError(e.response.data)
             }
@@ -28,31 +31,19 @@ const GoodContainer = () => {
     }, [goodId])
 
     const category = location.pathname.split('/')[1]
-    const categoryTitle = getTitle(category)
+    const categoryTitle = getCategoryTitle(category)
+    const goodName = useMemo(() => good?.name ?? 'loading', [good, good?.name])
 
     const paths = useMemo(() => {
         return [
             { value: 'Главная', url: '/home' },
             { value: categoryTitle, url: `/${category}` },
-            { value: good?.name ?? '', url: '' },
+            { value: goodName, url: '' },
         ]
-    }, [category, categoryTitle]) 
+    }, [category, categoryTitle, good, good?.name]) 
 
     const GoodWithLayout = withLayout(Good)
-    return error ? <NotFound title={error} /> : <GoodWithLayout title="Профиль" paths={paths} />
+    return error ? <NotFound title={error} /> : <GoodWithLayout title={goodName} paths={paths} good={good} loading={loading} />
 }
 
 export default GoodContainer
-
-const getTitle = category => {
-    let title = ''
-    switch (category) {
-        case 'photobooks':
-            title = 'Фотокниги' 
-            break;
-        default:
-            break;
-    }
-
-    return title
-}

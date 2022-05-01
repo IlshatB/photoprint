@@ -5,6 +5,10 @@ const CommentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,  
         ref: 'Client'
     },
+    goodId: { 
+        type: mongoose.Schema.Types.ObjectId,  
+        ref: 'Good'
+    },
     text: {
         type: String,
         required: [true, "Введите текст комментария"],

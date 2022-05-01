@@ -6,6 +6,7 @@ import Profile from '../Profile/ProfileContainer'
 
 /** страницы товаров */
 import Good from '../Good/GoodContainer'
+import GoodForm from '../Good/GoodFormContainer'
 
 import Photobooks from '../Photobooks/PhotobooksContainer'
 
@@ -13,6 +14,7 @@ import Photobooks from '../Photobooks/PhotobooksContainer'
 import NotImplemented from '../NotImplemented/NotImplemented'
 import NotFound from '../../components/NotFound/NotFound'
 import AuthGuard from '../../components/AuthGuard/AuthGuard'
+import AdminGuard from '../../components/AdminGuard/AdminGuard'
 
 const routes =  [
     {
@@ -40,6 +42,14 @@ const routes =  [
         ),
     },
     {
+        path: '/goods/new',
+        element: (
+            <AdminGuard>
+                <GoodForm />
+            </AdminGuard>
+        ),
+    },
+    {
         path: '/photobooks',
         children: [
             {
@@ -48,7 +58,24 @@ const routes =  [
             },
             {
                 path: ':goodId',
-                element: <Good />,
+                children: [
+                    {
+                        path: '',
+                        element: (
+                            <>
+                                <Good />
+                            </>
+                        ),
+                    },
+                    {
+                        path: 'edit',
+                        element: (
+                            <AdminGuard>
+                                <GoodForm edit />
+                            </AdminGuard>
+                        ),
+                    },
+                ],
             },
         ],
     },
@@ -58,13 +85,17 @@ const routes =  [
     },
     {
         path: '/profile',
-        element: (
-            <AuthGuard>
-                <Profile />
-            </AuthGuard>
-        ),
+        children: [
+            {
+                path: '',
+                element: (
+                    <AuthGuard>
+                        <Profile />
+                    </AuthGuard>
+                ),
+            },
+        ],
     },
-
 ]
 
 export default routes

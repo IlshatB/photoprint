@@ -1,3 +1,4 @@
+const jwt_decode = require('jwt-decode')
 const Client = require('../models/Client')
 const ErrorResponse = require('../utils/errorResponse')
 const keys = require('../config/keys')
@@ -5,10 +6,10 @@ const keys = require('../config/keys')
 exports.signUp = async (req, res, next) => {
     const { email, password } = req.body
     try {
-        const client = await Client.create({
-            email, password
-        })
-        sendToken(client, 201, res)
+        const client = await Client.create({ email, password })
+        const token = client.getSignedToken()
+        
+        res.status(w00q).json({ success: true,  token })
     } catch (e) {
         if (e.message.includes('duplicate key error collection')) {
             return res.status(409).send('Пользователь существует')
@@ -33,18 +34,33 @@ exports.signIn = async (req, res, next) => {
             return res.status(401).send('Неверный пароль')
         }
 
-       sendToken(client, 200, res)
+        const token = client.getSignedToken()
+        res.status(200).json({ success: true, token })
     } catch (e) {
         next(e)
     }
 }
 
+exports.fetch = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { id } = jwt_decode(token)
 
-const sendToken = (client, statusCode, res) => {
-    const token = client.getSignedToken()
-    res.status(statusCode).json({
-        success: true, 
-        token,
-        client
-    })
+    try {
+        const client = await Client.findById(id).populate({
+            path: 'cart.good',
+            select: 'name subDescription price',
+        })
+
+        res.status(200).json({
+            success: true,
+            client: { 
+                id: client._id, 
+                email: client.email, 
+                isAdmin: !!(id === keys.ADMIN_ID),
+                cartItems: client.cart,
+            }
+        })
+    } catch(e) {
+        next(e)
+    }
 }

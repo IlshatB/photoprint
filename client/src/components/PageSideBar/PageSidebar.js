@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { Layout, Menu, Divider, Badge } from 'antd'
@@ -15,7 +16,7 @@ import {
     UserOutlined,
     ProfileOutlined,
     LogoutOutlined,
-} from '@ant-design/icons';
+} from '@ant-design/icons'
 
 import { ShoppingCartProvider } from '../../providers'
 import { useCurrentClient } from '../../hooks'
@@ -27,7 +28,15 @@ const PageSideBar = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const { isAuthenticated } = useCurrentClient()
-    const { amounts } = ShoppingCartProvider.useContext()
+    const { cartItems } = useSelector(store => store.client)
+
+    const amounts = useMemo(() => {
+        let amount = 0
+        cartItems.forEach(i => {
+            amount += i.amount
+        })
+        return amount
+    }, [cartItems])
 
     const [collapsed, setCollapsed] = useState(false);
 

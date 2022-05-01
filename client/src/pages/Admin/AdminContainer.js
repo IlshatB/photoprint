@@ -3,7 +3,11 @@ import Admin from './Admin'
 const AdminContainer = () => {
     const handleCreate = () => {}
     
-    return <Admin onCreate={handleCreate} />
+    const handleUpdate = () => {}
+
+    const handleDelete = () => {}
+
+    return <Admin onCreate={handleCreate} onUpdate={handleUpdate} onDelete={handleDelete} />
 }
 
 export default AdminContainer
