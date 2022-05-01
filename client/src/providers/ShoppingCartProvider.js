@@ -13,7 +13,7 @@ const ShoppingCartProvider = ({ children }) => {
 
     const handleChangeItems = (type, item) => {
         const { id, amount } = item
-        // console.log(item)
+
         if (type === 'add') {
             onAdd(id, amount)
         }

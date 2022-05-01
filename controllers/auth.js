@@ -89,7 +89,6 @@ exports.changePassword = async (req, res, next) => {
         await client.save()
         res.status(200).json({ success: true, token: resetToken })
     } catch (e) {
-        console.log(e)
         next(e)
     }
 }
@@ -115,7 +114,6 @@ exports.resetPassword = async (req, res, next) => {
             message: "Сброс пароля успешно завершен"
         })
     } catch(e) {
-        console.log(e)
         next(e)
     }
 };

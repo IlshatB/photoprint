@@ -20,7 +20,6 @@ const Profile = () => {
             setResetToken(data.token)
     
         } catch(err) {
-            console.log(err.response.data)
             setError(err.response.data)
         }
     }
@@ -42,13 +41,9 @@ const Profile = () => {
                 }    
                 setLoading(false)
             } catch(err) {
-                console.log(222)
-                console.log(err.response.data)
                 setError(err.response.data)
             }
         } catch(err) {
-            console.log(111)
-            console.log(err.response.data)
             setError(err.response.data)
         }
     }
