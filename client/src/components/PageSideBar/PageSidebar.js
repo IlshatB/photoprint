@@ -25,7 +25,7 @@ import './pageSideBar.css'
 const PageSideBar = () => {
     const location = useLocation()
     const navigate = useNavigate()
-    const { isAuthenticated } = useCurrentClient()
+    const { isAuthenticated, exit } = useCurrentClient()
     const { cartItems } = useSelector(store => store.client)
 
     const amounts = useMemo(() => {
@@ -55,7 +55,7 @@ const PageSideBar = () => {
     }
 
     const handleExit = () => {
-        localStorage.clear()
+        exit()
         navigate('/home')
     }
 

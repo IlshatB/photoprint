@@ -9,29 +9,26 @@ import './goodItems.css'
 
 const styles = {
     card: { height: "100%", display: 'flex', flexDirection: 'column' },
-    block: { display: 'flex', justifyContent:"space-between", marginTop: '16px' },
+    block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
 }
 
 const GoodItem = ({ good, onAddItem }) => {
-    const handleAddItem =  useCallback(e => {
+    const handleAddItem = useCallback(e => {
         e.preventDefault()
         onAddItem(good)
     }, [onAddItem, good])
-
     return (
         <Col sm={24} lg={12} xl={8}>
             <Link to={`/photobooks/${good?._id}`}>
-                <Card  
+                <Card
                     hoverable
                     cover={
-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
-                            <img
-                                style={{ objectFit: 'contain' }}
-                                alt={good?.name}
-                                src={good?.image ?? fallback}
-                            />                            
-                        </div>
-                    } 
+                        <img
+                            style={{ objectFit: 'contain' }}
+                            alt={good?.name}
+                            src={good?.images[0].url}
+                        />
+                    }
                     style={styles.card} id="card-item"
                 >
                     <div style={{ flexGrow: 1 }}>
@@ -52,7 +49,7 @@ const GoodItem = ({ good, onAddItem }) => {
                             </Button>
                         </div>
                     </div>
-                </Card>              
+                </Card>
             </Link>
         </Col>
     )
@@ -61,29 +58,29 @@ const GoodItem = ({ good, onAddItem }) => {
 const Loading = () => {
     return (
         <Col sm={24} lg={12} xl={8}>
-            <Card  
+            <Card
                 hoverable
-                    cover={
-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />                  
-                        </div>
-                    } 
-                    style={styles.card} id="card-item"
-                >
-                    <div style={{ flexGrow: 1 }}>
-                        <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
+                cover={
+                    <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
                     </div>
-                    <div style={styles.block}>
-                        <div>
-                            <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />
-                        </div>
+                }
+                style={styles.card} id="card-item"
+            >
+                <div style={{ flexGrow: 1 }}>
+                    <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+                    <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                </div>
+                <div style={styles.block}>
                     <div>
-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
+                        <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                    </div>
+                    <div>
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
                     </div>
                 </div>
-            </Card> 
+            </Card>
         </Col>
     )
 }

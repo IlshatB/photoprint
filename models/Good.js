@@ -21,7 +21,7 @@ const GoodSchema = new mongoose.Schema({
         type: Number,
         required: [true, "Укажите цену"],
     },
-    images: [String],
+    images: [Object],
     productionTime: String,
     size: String,
     sizes: [String],

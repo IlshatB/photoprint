@@ -3,22 +3,23 @@ const Client = require('../models/Client')
 
 exports.createGood = async (req, res, next) => {
     const data = req.body
+    console.log(data)
 
     try {
         const good = await Good.create({ ...data })
-
+        console.log(good)
         res.status(201).json({
-            success: true, 
+            success: true,
             good
         })
-    } catch(e){
+    } catch (e) {
         next(e)
     }
 }
 
 exports.deleteGood = async (req, res, next) => {
-    const _id  = req.params.id
-    try {   
+    const _id = req.params.id
+    try {
         await Good.deleteOne({ _id })
 
         res.status(200).json({
@@ -43,18 +44,18 @@ exports.updateGood = async (req, res, next) => {
             success: true,
             good
         })
-    } catch(e) {
-        next(e)    
+    } catch (e) {
+        next(e)
     }
 }
 
 exports.fetchGood = async (req, res, next) => {
     const { id } = req.params
 
-    try{
+    try {
         const good = await Good.findById(id)
         res.status(200).json({
-            success: true, 
+            success: true,
             good
         })
     } catch (e) {
@@ -71,16 +72,16 @@ exports.fetchGoods = async (req, res, next) => {
 
     try {
         const goods = await Good.find({ category }).sort({ 'date': -1 }).limit(limit)
-        
+
         if (!goods.length) {
             return res.status(204).json({ success: true, goods })
-        } 
-        
+        }
+
         res.status(200).json({
-            success: true, 
+            success: true,
             goods
         })
-    } catch(e) {    
+    } catch (e) {
         next(e)
     }
 }
@@ -94,7 +95,7 @@ exports.saveCart = async (req, res, next) => {
             path: 'cart.good',
             select: 'name subDescription price',
         })
-        
+
         client.cart = [...items]
         client.save()
 
@@ -104,7 +105,7 @@ exports.saveCart = async (req, res, next) => {
                 cartItems: client.cart
             }
         })
-    } catch(e) {
+    } catch (e) {
         next(e)
     }
 }

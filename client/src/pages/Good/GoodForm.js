@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber } from 'antd'
-import { ExclamationCircleOutlined } from '@ant-design/icons'
+import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Upload } from 'antd'
+import { ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
+
 
 import { categories, categoriesList } from '../../helpers'
 
@@ -24,16 +26,20 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
 
     function handleDelete() {
         Modal.confirm({
-          title: `Вы точно хотите удалить следующую услугу?`,
-          icon: <ExclamationCircleOutlined />,
-          content: good?.name,
-          okText: 'Удалить',
-          okType: 'danger',
-          cancelText: 'Назад',
-          confirmLoading: deleteLoading,
-          onOk: handleDeleteConfirm,
+            title: `Вы точно хотите удалить следующую услугу?`,
+            icon: <ExclamationCircleOutlined />,
+            content: good?.name,
+            okText: 'Удалить',
+            okType: 'danger',
+            cancelText: 'Назад',
+            confirmLoading: deleteLoading,
+            onOk: handleDeleteConfirm,
         });
-      }
+    }
+    const [fileList, setFileList] = useState(good?.images)
+    const onChange = ({ fileList: newFileList }) => {
+        setFileList(newFileList)
+    };
 
     return (
         <Form
@@ -42,7 +48,17 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             initialValues={initialValues}
             onFinish={onFinish}
         >
-            <Card title={<CardTitle name={good?.name ?? ''} />} bordered={false}>
+            <Card title={<CardTitle name={fileList ?? ''} />} bordered={false}>
+                <Typography.Title level={4}>Внешний вид:</Typography.Title>
+                <Form.Item name='imgInfo' >
+                    <Upload
+                        defaultFileList={good?.images ?? []}
+                        listType="picture"
+                        onChange={onChange}
+                    >
+                        <Button icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                </Form.Item>
                 <Typography.Title level={4}>Краткое описание:</Typography.Title>
                 <Form.Item
                     name='subDescription'
@@ -55,7 +71,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                     <Input.TextArea rows={4} style={styles.input} bordered={false} placeholder='Краткое описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Описание:</Typography.Title>
-                <Form.Item name='description' rules={[{ required: true, message: 'Введите описание' } ]}>
+                <Form.Item name='description' rules={[{ required: true, message: 'Введите описание' }]}>
                     <Input.TextArea rows={10} style={styles.input} bordered={false} placeholder='Описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Характеристики:</Typography.Title>
@@ -73,7 +89,7 @@ const CardTitle = () => {
     return (
         <div>
             <Typography.Title level={4}>Категория:</Typography.Title>
-            <Form.Item name='category' rules={[{ required: true, message: 'Выберите категорию' } ]} >
+            <Form.Item name='category' rules={[{ required: true, message: 'Выберите категорию' }]} >
                 <Select>
                     {categoriesList.map(cat => (
                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
@@ -83,13 +99,13 @@ const CardTitle = () => {
                 </Select>
             </Form.Item>
             <Typography.Title level={4}>Название:</Typography.Title>
-            <Form.Item name='name' rules={[{ required: true, message: 'Введите название' } ]} style={{ marginTop: 16 }}>
+            <Form.Item name='name' rules={[{ required: true, message: 'Введите название' }]} style={{ marginTop: 16 }}>
                 <Input.TextArea rows={2} style={styles.input} bordered={false} placeholder='Название услуги/товара' />
             </Form.Item>
-            <Form.Item label="Цена:" name='price' rules={[{ required: true, message: 'Укажите цену' } ]} style={{ marginTop: 16 }}>
+            <Form.Item label="Цена:" name='price' rules={[{ required: true, message: 'Укажите цену' }]} style={{ marginTop: 16 }}>
                 <InputNumber min={1} style={styles.input} bordered={false} placeholder='Цена' addonAfter=" руб." />
             </Form.Item>
-        </div>  
+        </div>
     )
 }
 
@@ -117,7 +133,7 @@ export default GoodForm
 
 const styles = {
     input: {
-        backgroundColor: '#f0f0f0', 
+        backgroundColor: '#f0f0f0',
         resize: 'none',
     },
     buttons: edit => ({

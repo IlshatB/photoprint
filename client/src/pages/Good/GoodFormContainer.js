@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { getCategoryTitle } from '../../helpers'
+import { getCategoryTitle, storage } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import GoodForm from './GoodForm'
@@ -33,20 +33,44 @@ const GoodFormContainer = ({ edit = false }) => {
     }, [])
 
     const handleCreate = async values => {
-        const variables = { ...values, category: values.category.value}
-
+        const filesArray = values.imgInfo.fileList
+        const firebasePaths = []
         try {
-            const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
-            const { good } = await data
+            if (!!filesArray.length) {
+                for (let key in filesArray) {
+                    const snapshot = await storage
+                        .ref("images/" + filesArray[key].name)
+                        .put(filesArray[key].originFileObj)
+                    const url = await snapshot.ref.getDownloadURL()
+                    const firebaseInfo = {
+                        name: filesArray[key].name,
+                        url,
+                        thumbUrl: url
+                    }
+                    firebasePaths.push(firebaseInfo)
+                };
+            }
+            const variables = { ...values, category: values.category.value, images: firebasePaths }
+            delete variables.imgInfo
+            try {
+                const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
 
-            navigate(`/${good.category}/${good._id}`)
-        } catch (err) {
+                const { good } = await data
+
+                navigate(`/${good.category}/${good._id}`)
+            } catch (err) {
+                setError(err.response.data)
+            }
+        }
+        catch (err) {
             setError(err.response.data)
         }
     }
 
     const handleSave = async values => {
-        const variables = { ...values, category: values.category.value}
+        // const filesArray = values.imgInfo.fileList
+        const variables = { ...values, category: values.category.value }
+        console.log(variables)
 
         try {
             const { data } = await axios.patch(`/api/goods/update/good/${goodId}`, variables, { headers: { "Content-Type": "application/json" } })
@@ -87,16 +111,16 @@ const GoodFormContainer = ({ edit = false }) => {
                 { value: getCategoryTitle(category), url: `/${category}` },
                 { value: name, url: `/${category}/${id}` },
                 { value: 'Редактирование', url: '' },
-            ] :[
+            ] : [
                 { value: 'Профиль', url: '/profile' },
                 { value: 'Создание', url: '' }
             ]),
         ]
-    }, [name, id, category]) 
+    }, [name, id, category])
 
     const GoodFormWithLayout = withLayout(GoodForm)
-    return error 
-        ? <NotFound title={error} /> 
+    return error
+        ? <NotFound title={error} />
         : (
             <GoodFormWithLayout
                 title={name}
