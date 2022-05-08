@@ -11,7 +11,7 @@ const {
 } = require('../controllers/goods')
 
 router.route('/create').post(createGood)
-router.route('/delete/good/:id').delete(deleteGood)
+router.route('/delete/good/:id').patch(deleteGood)
 router.route('/update/good/:id').patch(updateGood)
 router.route('/fetch/good/:id').get(fetchGood)
 router.route('/fetch/goods/:category&:limit').get(fetchGoods)

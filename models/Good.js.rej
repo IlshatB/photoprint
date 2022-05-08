@@ -1,0 +1,10 @@
+diff a/models/Good.js b/models/Good.js	(rejected hunks)
+@@ -21,7 +21,7 @@ const GoodSchema = new mongoose.Schema({
+         type: Number,
+         required: [true, "╨г╨║╨░╨╢╨╕╤В╨╡ ╤Ж╨╡╨╜╤Г"],
+     },
+-    images: [String],
++    images: [Object],
+     productionTime: String,
+     size: String,
+     sizes: [String],

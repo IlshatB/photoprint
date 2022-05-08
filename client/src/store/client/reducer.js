@@ -8,21 +8,24 @@ const INITIAL_STATE = {
     isAdmin: false,
 }
 
-export default (state = INITIAL_STATE, action) => {
+const reducer = (state = INITIAL_STATE, action) => {
   switch (action.type) {
     case UPDATE_CLIENT:
         const { payload } = action
-        const { id, email, cartItems, isAdmin = false } = payload
+        const { id, email, cartItems, isAdmin = false, orders = [] } = payload
         return { 
           ...state, 
           id, 
           email,
           cartItems,
           isAdmin,
+          orders,
         }
     case UPDATE_CART:
-        return { ...state, cartItems: action.payload.cartItems }
+        return { ...state, cartItems: action.payload }
     default:
         return state
   }
-};
+}
+
+export default reducer

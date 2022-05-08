@@ -1,23 +1,17 @@
-import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Col, Card, Typography, Button, Skeleton } from 'antd'
+import { Col, Card, Typography, Skeleton } from 'antd'
 
 import { getTimeByString } from '../../helpers'
 
 import fallback from '../../assets/images/fallback.png'
-import './goodItems.css'
 
 const styles = {
     card: { height: "100%", display: 'flex', flexDirection: 'column' },
     block: { display: 'flex', justifyContent:"space-between", marginTop: '16px' },
+    price: { color: '#1890ff' },
 }
 
-const GoodItem = ({ good, onAddItem }) => {
-    const handleAddItem =  useCallback(e => {
-        e.preventDefault()
-        onAddItem(good)
-    }, [onAddItem, good])
-
+const GoodItem = ({ good }) => {
     return (
         <Col sm={24} lg={12} xl={8}>
             <Link to={`/photobooks/${good?._id}`}>
@@ -40,16 +34,11 @@ const GoodItem = ({ good, onAddItem }) => {
                     <div style={styles.block}>
                         <div>
                             <Typography.Paragraph type="primary">
-                                {`${good?.price} руб`}
+                                {`${getPriceWithSale(good?.price, good?.sale)} руб.`}
                             </Typography.Paragraph>
                             <Typography.Text type="secondary">
                                 {good?.productionTime && `Срок изготовления: ${getTimeByString(good?.productionTime)}`}
                             </Typography.Text>
-                        </div>
-                        <div>
-                            <Button type="primary" size="medium" onClick={handleAddItem} >
-                                В корзину
-                            </Button>
                         </div>
                     </div>
                 </Card>              
@@ -61,32 +50,36 @@ const GoodItem = ({ good, onAddItem }) => {
 const Loading = () => {
     return (
         <Col sm={24} lg={12} xl={8}>
-            <Card  
+            <Card
                 hoverable
-                    cover={
-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />                  
-                        </div>
-                    } 
-                    style={styles.card} id="card-item"
-                >
-                    <div style={{ flexGrow: 1 }}>
-                        <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
+                cover={
+                    <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
                     </div>
-                    <div style={styles.block}>
-                        <div>
-                            <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />
-                        </div>
+                }
+                style={styles.card} id="card-item"
+            >
+                <div style={{ flexGrow: 1 }}>
+                    <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+                    <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                </div>
+                <div style={styles.block}>
                     <div>
-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
+                        <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                    </div>
+                    <div>
+                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
                     </div>
                 </div>
-            </Card> 
+            </Card>
         </Col>
     )
 }
 
 GoodItem.Loading = Loading
 export default GoodItem 
+
+const getPriceWithSale = (price, sale) => {
+    return sale ? price * (100 - sale) / 100 : price
+}

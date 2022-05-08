@@ -1,0 +1,13 @@
+diff a/controllers/goods.js b/controllers/goods.js	(rejected hunks)
+@@ -3,11 +3,8 @@ const Client = require('../models/Client')
+ 
+ exports.createGood = async (req, res, next) => {
+     const data = req.body
+-    console.log(data)
+-
+     try {
+         const good = await Good.create({ ...data })
+-        console.log(good)
+         res.status(201).json({
+             success: true,
+             good

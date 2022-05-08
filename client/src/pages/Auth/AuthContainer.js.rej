@@ -1,0 +1,32 @@
+diff a/client/src/pages/Auth/AuthContainer.js b/client/src/pages/Auth/AuthContainer.js	(rejected hunks)
+@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
+ import axios from 'axios'
+ 
+ import { withLayout } from '../../hocs'
++import { useCurrentClient } from '../../hooks'
+ 
+ import { loginClient } from '../../store/client/actions'
+ 
+@@ -14,11 +15,14 @@ import Auth from './Auth'
+ const AuthContainer = () => {
+     const navigate = useNavigate()
+     const dispatch = useDispatch()
++    const { setToken } = useCurrentClient()
+ 
+     const handleLogin = async values => {
+         try {
+             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
++            setToken(data.token)
+             dispatch(loginClient(data.token))
++            
+             navigate('/home')
+         } catch (e) {
+             return Promise.reject(e.response.data)
+@@ -31,6 +35,7 @@ const AuthContainer = () => {
+         try {
+             if (password !== confirm) throw new Error('╨Я╨░╤А╨╛╨╗╨╕ ╨╜╨╡ ╤Б╨╛╨▓╨┐╨░╨┤╨░╤О╤В')
+             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
++            setToken(data.token)
+             dispatch(loginClient(data.token))
+ 
+             navigate('/home')

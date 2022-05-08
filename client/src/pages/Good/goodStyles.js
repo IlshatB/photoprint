@@ -1,4 +1,4 @@
-export default {
+const styles = {
     headerTitle: {
         display: 'flex',
         justifyContent: 'space-between',
@@ -22,3 +22,5 @@ export default {
         ...(sale && { color: '#bfbfbf' }),
     }),
 }
+
+export default styles

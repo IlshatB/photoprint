@@ -1,0 +1,1588 @@
+From 5e33d50e46f1bfc0d34a765e59c15744af8d9fad Mon Sep 17 00:00:00 2001
+From: hinagawa <psalimullina@gmail.com>
+Date: Wed, 4 May 2022 00:22:19 +0300
+Subject: [PATCH 1/2] patch
+
+---
+ client/package.json                           |   1 +
+ .../src/components/PageSideBar/PageSidebar.js |   4 +-
+ client/src/helpers/firebase.js                |  16 +
+ client/src/helpers/index.js                   |   1 +
+ client/src/hooks/useCurrentClient.js          |   8 +-
+ client/src/pages/Auth/AuthContainer.js        |   5 +
+ client/src/pages/Good/Good.js                 |  56 ++-
+ client/src/pages/Good/GoodForm.js             |  52 +-
+ client/src/pages/Good/GoodFormContainer.js    |  48 +-
+ client/src/pages/Goods/GoodItem.js            |  57 +--
+ .../pages/Photobooks/PhotobooksContainer.js   |   2 +-
+ client/yarn.lock                              | 472 +++++++++++++++++-
+ controllers/goods.js                          |  33 +-
+ models/Good.js                                |   2 +-
+ 14 files changed, 654 insertions(+), 103 deletions(-)
+ create mode 100644 client/src/helpers/firebase.js
+
+diff --git a/client/package.json b/client/package.json
+index 1e1c433..0614ae7 100644
+--- a/client/package.json
++++ b/client/package.json
+@@ -11,6 +11,7 @@
+     "antd": "^4.19.2",
+     "antd-css-utilities": "^1.0.3",
+     "axios": "^0.26.1",
++    "firebase": "^8.10.1",
+     "formik": "^2.2.9",
+     "jwt-decode": "^3.1.2",
+     "jwt-encode": "^1.0.1",
+diff --git a/client/src/components/PageSideBar/PageSidebar.js b/client/src/components/PageSideBar/PageSidebar.js
+index f70ae73..7d927ff 100644
+--- a/client/src/components/PageSideBar/PageSidebar.js
++++ b/client/src/components/PageSideBar/PageSidebar.js
+@@ -25,7 +25,7 @@ import './pageSideBar.css'
+ const PageSideBar = () => {
+     const location = useLocation()
+     const navigate = useNavigate()
+-    const { isAuthenticated } = useCurrentClient()
++    const { isAuthenticated, exit } = useCurrentClient()
+     const { cartItems } = useSelector(store => store.client)
+ 
+     const amounts = useMemo(() => {
+@@ -55,7 +55,7 @@ const PageSideBar = () => {
+     }
+ 
+     const handleExit = () => {
+-        localStorage.clear()
++        exit()
+         navigate('/home')
+     }
+ 
+diff --git a/client/src/helpers/firebase.js b/client/src/helpers/firebase.js
+new file mode 100644
+index 0000000..a3f780e
+--- /dev/null
++++ b/client/src/helpers/firebase.js
+@@ -0,0 +1,16 @@
++import firebase from "@firebase/app";
++import "@firebase/storage";
++
++const firebaseConfig = {
++    apiKey: "AIzaSyAQa1YbFOXAlTZG2n8ZTENZLHI3aAyhol4",
++    authDomain: "photoprint-db532.firebaseapp.com",
++    projectId: "photoprint-db532",
++    storageBucket: "photoprint-db532.appspot.com",
++    messagingSenderId: "937877443867",
++    appId: "1:937877443867:web:b49b11b7393a94fe9c2fbe",     
++    measurementId: "G-6Z48ER252Q"
++};
++
++firebase.initializeApp(firebaseConfig);
++
++export const storage = firebase.storage();
+\ No newline at end of file
+diff --git a/client/src/helpers/index.js b/client/src/helpers/index.js
+index 46c064d..d1d0edf 100644
+--- a/client/src/helpers/index.js
++++ b/client/src/helpers/index.js
+@@ -1,4 +1,5 @@
+ export * from './time'
+ export * from './category'
++export * from './firebase'
+ 
+ export * from './mocks'
+diff --git a/client/src/hooks/useCurrentClient.js b/client/src/hooks/useCurrentClient.js
+index 8df1899..c103310 100644
+--- a/client/src/hooks/useCurrentClient.js
++++ b/client/src/hooks/useCurrentClient.js
+@@ -5,11 +5,17 @@ const getToken = () => {
+     return token
+ }
+ 
++const setToken = token => {
++    localStorage.setItem('authToken', token)
++}
++
++const exit = () => localStorage.clear()
++
+ const useCurrentClient = () => {
+     const token = getToken()
+     const client = token ? jwt_decode(token) : {}
+ 
+-    return { client, isAuthenticated: Boolean(token), token }
++    return { client, isAuthenticated: Boolean(token), token, setToken, exit }
+ }
+ 
+ export default useCurrentClient
+\ No newline at end of file
+diff --git a/client/src/pages/Auth/AuthContainer.js b/client/src/pages/Auth/AuthContainer.js
+index 750ab8d..02dbb0f 100644
+--- a/client/src/pages/Auth/AuthContainer.js
++++ b/client/src/pages/Auth/AuthContainer.js
+@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
+ import axios from 'axios'
+ 
+ import { withLayout } from '../../hocs'
++import { useCurrentClient } from '../../hooks'
+ 
+ import { loginClient } from '../../store/client/actions'
+ 
+@@ -14,11 +15,14 @@ import Auth from './Auth'
+ const AuthContainer = () => {
+     const navigate = useNavigate()
+     const dispatch = useDispatch()
++    const { setToken } = useCurrentClient()
+ 
+     const handleLogin = async values => {
+         try {
+             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
++            setToken(data.token)
+             dispatch(loginClient(data.token))
++            
+             navigate('/home')
+         } catch (e) {
+             return Promise.reject(e.response.data)
+@@ -31,6 +35,7 @@ const AuthContainer = () => {
+         try {
+             if (password !== confirm) throw new Error('╨Я╨░╤А╨╛╨╗╨╕ ╨╜╨╡ ╤Б╨╛╨▓╨┐╨░╨┤╨░╤О╤В')
+             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
++            setToken(data.token)
+             dispatch(loginClient(data.token))
+ 
+             navigate('/home')
+diff --git a/client/src/pages/Good/Good.js b/client/src/pages/Good/Good.js
+index 8bde461..6a45ae0 100644
+--- a/client/src/pages/Good/Good.js
++++ b/client/src/pages/Good/Good.js
+@@ -1,19 +1,41 @@
+ import { Link } from 'react-router-dom'
+ import { Card, Typography, Skeleton, Carousel, Image, Tabs, Button } from 'antd'
+ import { EditOutlined } from '@ant-design/icons'
+-import { cyan} from '@ant-design/colors'
++
++import { geekblue } from '@ant-design/colors'
++import { cyan } from '@ant-design/colors'
+ 
+ import { useCurrentClient } from '../../hooks'
+ import Admin from '../Admin/AdminContainer'
+ 
++
+ import fallback from '../../assets/images/fallback.png'
+ import styles from './goodStyles'
+ 
++
++const contentStyle = {
++    display: 'flex',
++    justifyContent: 'center',
++    backgroundColor: geekblue[0],
++};
++
++
+ const Good = ({ good, loading = false }) => {
+     return (
+-        <Card title={<CardTitle good={good} loading={loading} />}bordered={false}>
+-            <CardImages images={good?.images ?? []} loading={loading} />
+-            <Tabs defaultActiveKey="description" onChange={() => {}} type="card">
++        <Card title={<CardTitle good={good} loading={loading} />} bordered={false}>
++            <Carousel>
++                {
++                    good?.images.map((image) => {
++                        return <div><div style={contentStyle}>
++                            <Image height={300} src={image.url} preview={false} />
++                        </div>
++                        </div>
++                    })
++
++                }
++
++            </Carousel>
++            <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
+                 <Tabs.TabPane tab="╨Ю╨┐╨╕╤Б╨░╨╜╨╕╨╡" key="description">
+                     <Description description={good?.description ?? ''} loading={loading} />
+                 </Tabs.TabPane>
+@@ -32,16 +54,16 @@ const CardTitle = ({ good, loading }) => {
+             <div>
+                 <div style={styles.headerTitle}>
+                     <Typography.Title level={3}>{good?.name}</Typography.Title>
+-                        <Link to={`edit`}>
+-                            <Button shape="circle" icon={<EditOutlined />} size="small" onClick={e => e.stopPropagation()} />
+-                        </Link>
++                    <Link to={`edit`}>
++                        <Button shape="circle" icon={<EditOutlined />} size="small" onClick={e => e.stopPropagation()} />
++                    </Link>
+                 </div>
+                 <div>
+                     <Typography.Text style={styles.price}>╨╛╤В</Typography.Text>
+                     <Typography.Text style={{ ...styles.price, ...styles.salePrice(isSale) }} type={isSale && 'secondary'} delete={isSale}>  {good?.price}  </Typography.Text>
+                     <Typography.Text style={styles.price}>{getPriceWithSale(good?.price, good?.sale)}</Typography.Text>
+                 </div>
+-            </div>   
++            </div>
+         ) : (
+             <div style={styles.skeleton}>
+                 <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+@@ -53,15 +75,15 @@ const CardTitle = ({ good, loading }) => {
+ }
+ 
+ const CardImages = ({ images, loading }) => {
+-    return !loading ? (    
++    return !loading ? (
+         images.length > 0 ? (
+             <Carousel autoplay effect="fade">
+                 {images.map(image => (
+                     <div>
+-                    <div style={styles.imageContent}>
+-                        <Image height={300} src={image} preview={false} />
++                        <div style={styles.imageContent}>
++                            <Image height={300} src={image} preview={false} />
++                        </div>
+                     </div>
+-                </div>
+                 ))}
+             </Carousel>
+         ) : (
+@@ -69,15 +91,15 @@ const CardImages = ({ images, loading }) => {
+                 <img
+                     style={{ objectFit: 'contain' }}
+                     src={fallback}
+-                />                            
++                />
+             </div>
+         )
+     ) : (
+         <div style={styles.skeleton}>
+             {Array.from(Array(7).keys()).map((_, id) => (
+                 <Skeleton.Input key={`skeleton-${id}`} active block size="small" style={{ width: '100%' }} />
+-            )) }
+-        </div> 
++            ))}
++        </div>
+     )
+ }
+ 
+@@ -90,8 +112,8 @@ const Description = ({ description, loading }) => {
+         <div style={styles.skeleton}>
+             {Array.from(Array(3).keys()).map((_, id) => (
+                 <Skeleton.Input key={`skeleton-${id}`} active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+-            )) }
+-        </div> 
++            ))}
++        </div>
+     )
+ }
+ 
+diff --git a/client/src/pages/Good/GoodForm.js b/client/src/pages/Good/GoodForm.js
+index 5e12cae..e1f4a3a 100644
+--- a/client/src/pages/Good/GoodForm.js
++++ b/client/src/pages/Good/GoodForm.js
+@@ -1,6 +1,8 @@
++import { useState } from 'react'
+ import { useNavigate } from "react-router-dom"
+-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber } from 'antd'
+-import { ExclamationCircleOutlined } from '@ant-design/icons'
++import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Upload } from 'antd'
++import { ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
++
+ 
+ import { categories, categoriesList } from '../../helpers'
+ 
+@@ -24,16 +26,20 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+ 
+     function handleDelete() {
+         Modal.confirm({
+-          title: `╨Т╤Л ╤В╨╛╤З╨╜╨╛ ╤Е╨╛╤В╨╕╤В╨╡ ╤Г╨┤╨░╨╗╨╕╤В╤М ╤Б╨╗╨╡╨┤╤Г╤О╤Й╤Г╤О ╤Г╤Б╨╗╤Г╨│╤Г?`,
+-          icon: <ExclamationCircleOutlined />,
+-          content: good?.name,
+-          okText: '╨г╨┤╨░╨╗╨╕╤В╤М',
+-          okType: 'danger',
+-          cancelText: '╨Э╨░╨╖╨░╨┤',
+-          confirmLoading: deleteLoading,
+-          onOk: handleDeleteConfirm,
++            title: `╨Т╤Л ╤В╨╛╤З╨╜╨╛ ╤Е╨╛╤В╨╕╤В╨╡ ╤Г╨┤╨░╨╗╨╕╤В╤М ╤Б╨╗╨╡╨┤╤Г╤О╤Й╤Г╤О ╤Г╤Б╨╗╤Г╨│╤Г?`,
++            icon: <ExclamationCircleOutlined />,
++            content: good?.name,
++            okText: '╨г╨┤╨░╨╗╨╕╤В╤М',
++            okType: 'danger',
++            cancelText: '╨Э╨░╨╖╨░╨┤',
++            confirmLoading: deleteLoading,
++            onOk: handleDeleteConfirm,
+         });
+-      }
++    }
++    const [fileList, setFileList] = useState(good?.images)
++    const onChange = ({ fileList: newFileList }) => {
++        setFileList(newFileList)
++    };
+ 
+     return (
+         <Form
+@@ -42,7 +48,17 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+             initialValues={initialValues}
+             onFinish={onFinish}
+         >
+-            <Card title={<CardTitle name={good?.name ?? ''} />} bordered={false}>
++            <Card title={<CardTitle name={fileList ?? ''} />} bordered={false}>
++                <Typography.Title level={4}>╨Т╨╜╨╡╤И╨╜╨╕╨╣ ╨▓╨╕╨┤:</Typography.Title>
++                <Form.Item name='imgInfo' >
++                    <Upload
++                        defaultFileList={good?.images ?? []}
++                        listType="picture"
++                        onChange={onChange}
++                    >
++                        <Button icon={<UploadOutlined />}>Upload</Button>
++                    </Upload>
++                </Form.Item>
+                 <Typography.Title level={4}>╨Ъ╤А╨░╤В╨║╨╛╨╡ ╨╛╨┐╨╕╤Б╨░╨╜╨╕╨╡:</Typography.Title>
+                 <Form.Item
+                     name='subDescription'
+@@ -55,7 +71,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+                     <Input.TextArea rows={4} style={styles.input} bordered={false} placeholder='╨Ъ╤А╨░╤В╨║╨╛╨╡ ╨╛╨┐╨╕╤Б╨░╨╜╨╕╨╡ ╤Г╤Б╨╗╤Г╨│╨╕/╤В╨╛╨▓╨░╤А╨░' />
+                 </Form.Item>
+                 <Typography.Title level={4}>╨Ю╨┐╨╕╤Б╨░╨╜╨╕╨╡:</Typography.Title>
+-                <Form.Item name='description' rules={[{ required: true, message: '╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨╛╨┐╨╕╤Б╨░╨╜╨╕╨╡' } ]}>
++                <Form.Item name='description' rules={[{ required: true, message: '╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨╛╨┐╨╕╤Б╨░╨╜╨╕╨╡' }]}>
+                     <Input.TextArea rows={10} style={styles.input} bordered={false} placeholder='╨Ю╨┐╨╕╤Б╨░╨╜╨╕╨╡ ╤Г╤Б╨╗╤Г╨│╨╕/╤В╨╛╨▓╨░╤А╨░' />
+                 </Form.Item>
+                 <Typography.Title level={4}>╨е╨░╤А╨░╨║╤В╨╡╤А╨╕╤Б╤В╨╕╨║╨╕:</Typography.Title>
+@@ -73,7 +89,7 @@ const CardTitle = () => {
+     return (
+         <div>
+             <Typography.Title level={4}>╨Ъ╨░╤В╨╡╨│╨╛╤А╨╕╤П:</Typography.Title>
+-            <Form.Item name='category' rules={[{ required: true, message: '╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨║╨░╤В╨╡╨│╨╛╤А╨╕╤О' } ]} >
++            <Form.Item name='category' rules={[{ required: true, message: '╨Т╤Л╨▒╨╡╤А╨╕╤В╨╡ ╨║╨░╤В╨╡╨│╨╛╤А╨╕╤О' }]} >
+                 <Select>
+                     {categoriesList.map(cat => (
+                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
+@@ -83,13 +99,13 @@ const CardTitle = () => {
+                 </Select>
+             </Form.Item>
+             <Typography.Title level={4}>╨Э╨░╨╖╨▓╨░╨╜╨╕╨╡:</Typography.Title>
+-            <Form.Item name='name' rules={[{ required: true, message: '╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨╜╨░╨╖╨▓╨░╨╜╨╕╨╡' } ]} style={{ marginTop: 16 }}>
++            <Form.Item name='name' rules={[{ required: true, message: '╨Т╨▓╨╡╨┤╨╕╤В╨╡ ╨╜╨░╨╖╨▓╨░╨╜╨╕╨╡' }]} style={{ marginTop: 16 }}>
+                 <Input.TextArea rows={2} style={styles.input} bordered={false} placeholder='╨Э╨░╨╖╨▓╨░╨╜╨╕╨╡ ╤Г╤Б╨╗╤Г╨│╨╕/╤В╨╛╨▓╨░╤А╨░' />
+             </Form.Item>
+-            <Form.Item label="╨ж╨╡╨╜╨░:" name='price' rules={[{ required: true, message: '╨г╨║╨░╨╢╨╕╤В╨╡ ╤Ж╨╡╨╜╤Г' } ]} style={{ marginTop: 16 }}>
++            <Form.Item label="╨ж╨╡╨╜╨░:" name='price' rules={[{ required: true, message: '╨г╨║╨░╨╢╨╕╤В╨╡ ╤Ж╨╡╨╜╤Г' }]} style={{ marginTop: 16 }}>
+                 <InputNumber min={1} style={styles.input} bordered={false} placeholder='╨ж╨╡╨╜╨░' addonAfter=" ╤А╤Г╨▒." />
+             </Form.Item>
+-        </div>  
++        </div>
+     )
+ }
+ 
+@@ -117,7 +133,7 @@ export default GoodForm
+ 
+ const styles = {
+     input: {
+-        backgroundColor: '#f0f0f0', 
++        backgroundColor: '#f0f0f0',
+         resize: 'none',
+     },
+     buttons: edit => ({
+diff --git a/client/src/pages/Good/GoodFormContainer.js b/client/src/pages/Good/GoodFormContainer.js
+index 549862f..3892192 100644
+--- a/client/src/pages/Good/GoodFormContainer.js
++++ b/client/src/pages/Good/GoodFormContainer.js
+@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
+ import axios from 'axios'
+ 
+ import { withLayout } from '../../hocs'
+-import { getCategoryTitle } from '../../helpers'
++import { getCategoryTitle, storage } from '../../helpers'
+ import NotFound from '../../components/NotFound/NotFound'
+ 
+ import GoodForm from './GoodForm'
+@@ -33,20 +33,44 @@ const GoodFormContainer = ({ edit = false }) => {
+     }, [])
+ 
+     const handleCreate = async values => {
+-        const variables = { ...values, category: values.category.value}
+-
++        const filesArray = values.imgInfo.fileList
++        const firebasePaths = []
+         try {
+-            const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
+-            const { good } = await data
++            if (!!filesArray.length) {
++                for (let key in filesArray) {
++                    const snapshot = await storage
++                        .ref("images/" + filesArray[key].name)
++                        .put(filesArray[key].originFileObj)
++                    const url = await snapshot.ref.getDownloadURL()
++                    const firebaseInfo = {
++                        name: filesArray[key].name,
++                        url,
++                        thumbUrl: url
++                    }
++                    firebasePaths.push(firebaseInfo)
++                };
++            }
++            const variables = { ...values, category: values.category.value, images: firebasePaths }
++            delete variables.imgInfo
++            try {
++                const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
+ 
+-            navigate(`/${good.category}/${good._id}`)
+-        } catch (err) {
++                const { good } = await data
++
++                navigate(`/${good.category}/${good._id}`)
++            } catch (err) {
++                setError(err.response.data)
++            }
++        }
++        catch (err) {
+             setError(err.response.data)
+         }
+     }
+ 
+     const handleSave = async values => {
+-        const variables = { ...values, category: values.category.value}
++        // const filesArray = values.imgInfo.fileList
++        const variables = { ...values, category: values.category.value }
++        console.log(variables)
+ 
+         try {
+             const { data } = await axios.patch(`/api/goods/update/good/${goodId}`, variables, { headers: { "Content-Type": "application/json" } })
+@@ -87,16 +111,16 @@ const GoodFormContainer = ({ edit = false }) => {
+                 { value: getCategoryTitle(category), url: `/${category}` },
+                 { value: name, url: `/${category}/${id}` },
+                 { value: '╨а╨╡╨┤╨░╨║╤В╨╕╤А╨╛╨▓╨░╨╜╨╕╨╡', url: '' },
+-            ] :[
++            ] : [
+                 { value: '╨Я╤А╨╛╤Д╨╕╨╗╤М', url: '/profile' },
+                 { value: '╨б╨╛╨╖╨┤╨░╨╜╨╕╨╡', url: '' }
+             ]),
+         ]
+-    }, [name, id, category]) 
++    }, [name, id, category])
+ 
+     const GoodFormWithLayout = withLayout(GoodForm)
+-    return error 
+-        ? <NotFound title={error} /> 
++    return error
++        ? <NotFound title={error} />
+         : (
+             <GoodFormWithLayout
+                 title={name}
+diff --git a/client/src/pages/Goods/GoodItem.js b/client/src/pages/Goods/GoodItem.js
+index 832f2ad..bf2341d 100644
+--- a/client/src/pages/Goods/GoodItem.js
++++ b/client/src/pages/Goods/GoodItem.js
+@@ -9,29 +9,26 @@ import './goodItems.css'
+ 
+ const styles = {
+     card: { height: "100%", display: 'flex', flexDirection: 'column' },
+-    block: { display: 'flex', justifyContent:"space-between", marginTop: '16px' },
++    block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
+ }
+ 
+ const GoodItem = ({ good, onAddItem }) => {
+-    const handleAddItem =  useCallback(e => {
++    const handleAddItem = useCallback(e => {
+         e.preventDefault()
+         onAddItem(good)
+     }, [onAddItem, good])
+-
+     return (
+         <Col sm={24} lg={12} xl={8}>
+             <Link to={`/photobooks/${good?._id}`}>
+-                <Card  
++                <Card
+                     hoverable
+                     cover={
+-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
+-                            <img
+-                                style={{ objectFit: 'contain' }}
+-                                alt={good?.name}
+-                                src={good?.image ?? fallback}
+-                            />                            
+-                        </div>
+-                    } 
++                        <img
++                            style={{ objectFit: 'contain' }}
++                            alt={good?.name}
++                            src={good?.images[0].url}
++                        />
++                    }
+                     style={styles.card} id="card-item"
+                 >
+                     <div style={{ flexGrow: 1 }}>
+@@ -52,7 +49,7 @@ const GoodItem = ({ good, onAddItem }) => {
+                             </Button>
+                         </div>
+                     </div>
+-                </Card>              
++                </Card>
+             </Link>
+         </Col>
+     )
+@@ -61,29 +58,29 @@ const GoodItem = ({ good, onAddItem }) => {
+ const Loading = () => {
+     return (
+         <Col sm={24} lg={12} xl={8}>
+-            <Card  
++            <Card
+                 hoverable
+-                    cover={
+-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
+-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />                  
+-                        </div>
+-                    } 
+-                    style={styles.card} id="card-item"
+-                >
+-                    <div style={{ flexGrow: 1 }}>
++                cover={
++                    <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
++                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
++                    </div>
++                }
++                style={styles.card} id="card-item"
++            >
++                <div style={{ flexGrow: 1 }}>
++                    <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
++                    <Skeleton.Input active block size="small" style={{ width: '100%' }} />
++                </div>
++                <div style={styles.block}>
++                    <div>
+                         <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
++                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                     </div>
+-                    <div style={styles.block}>
+-                        <div>
+-                            <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
+-                            <Skeleton.Input active block size="small" style={{ width: '100%'}} />
+-                        </div>
+                     <div>
+-                        <Skeleton.Input active block size="small" style={{ width: '100%'}} />
++                        <Skeleton.Input active block size="small" style={{ width: '100%' }} />
+                     </div>
+                 </div>
+-            </Card> 
++            </Card>
+         </Col>
+     )
+ }
+diff --git a/client/src/pages/Photobooks/PhotobooksContainer.js b/client/src/pages/Photobooks/PhotobooksContainer.js
+index 05cb257..9d0cd80 100644
+--- a/client/src/pages/Photobooks/PhotobooksContainer.js
++++ b/client/src/pages/Photobooks/PhotobooksContainer.js
+@@ -23,7 +23,7 @@ const PhotobooksContainer = () => {
+             try {
+                 const { data } = await axios.get(`/api/goods/fetch/goods/photobooks&${limit}`, { headers: { "Content-Type": "application/json" } })
+                 setGoods(data.goods)
+-
++                console.log(data.goods)
+                 setTimeout(() => {
+                     setLoading(false)
+                     setMoreLoading(false)
+diff --git a/client/yarn.lock b/client/yarn.lock
+index 7b4c5b9..afecf41 100644
+--- a/client/yarn.lock
++++ b/client/yarn.lock
+@@ -1156,6 +1156,273 @@
+     "minimatch" "^3.0.4"
+     "strip-json-comments" "^3.1.1"
+ 
++"@firebase/analytics-types@0.6.0":
++  "integrity" "sha512-kbMawY0WRPyL/lbknBkme4CNLl+Gw+E9G4OpNeXAauqoQiNkBgpIvZYy7BRT4sNGhZbxdxXxXbruqUwDzLmvTw=="
++  "resolved" "https://registry.npmjs.org/@firebase/analytics-types/-/analytics-types-0.6.0.tgz"
++  "version" "0.6.0"
++
++"@firebase/analytics@0.6.18":
++  "integrity" "sha512-FXNtYDxbs9ynPbzUVuG94BjFPOPpgJ7156660uvCBuKgoBCIVcNqKkJQQ7TH8384fqvGjbjdcgARY9jgAHbtog=="
++  "resolved" "https://registry.npmjs.org/@firebase/analytics/-/analytics-0.6.18.tgz"
++  "version" "0.6.18"
++  dependencies:
++    "@firebase/analytics-types" "0.6.0"
++    "@firebase/component" "0.5.6"
++    "@firebase/installations" "0.4.32"
++    "@firebase/logger" "0.2.6"
++    "@firebase/util" "1.3.0"
++    "tslib" "^2.1.0"
++
++"@firebase/app-check-interop-types@0.1.0":
++  "integrity" "sha512-uZfn9s4uuRsaX5Lwx+gFP3B6YsyOKUE+Rqa6z9ojT4VSRAsZFko9FRn6OxQUA1z5t5d08fY4pf+/+Dkd5wbdbA=="
++  "resolved" "https://registry.npmjs.org/@firebase/app-check-interop-types/-/app-check-interop-types-0.1.0.tgz"
++  "version" "0.1.0"
++
++"@firebase/app-check-types@0.3.1":
++  "integrity" "sha512-KJ+BqJbdNsx4QT/JIT1yDj5p6D+QN97iJs3GuHnORrqL+DU3RWc9nSYQsrY6Tv9jVWcOkMENXAgDT484vzsm2w=="
++  "resolved" "https://registry.npmjs.org/@firebase/app-check-types/-/app-check-types-0.3.1.tgz"
++  "version" "0.3.1"
++
++"@firebase/app-check@0.3.2":
++  "integrity" "sha512-YjpsnV1xVTO1B836IKijRcDeceLgHQNJ/DWa+Vky9UHkm1Mi4qosddX8LZzldaWRTWKX7BN1MbZOLY8r7M/MZQ=="
++  "resolved" "https://registry.npmjs.org/@firebase/app-check/-/app-check-0.3.2.tgz"
++  "version" "0.3.2"
++  dependencies:
++    "@firebase/app-check-interop-types" "0.1.0"
++    "@firebase/app-check-types" "0.3.1"
++    "@firebase/component" "0.5.6"
++    "@firebase/logger" "0.2.6"
++    "@firebase/util" "1.3.0"
++    "tslib" "^2.1.0"
++
++"@firebase/app-types@0.6.3", "@firebase/app-types@0.x":
++  "integrity" "sha512-/M13DPPati7FQHEQ9Minjk1HGLm/4K4gs9bR4rzLCWJg64yGtVC0zNg9gDpkw9yc2cvol/mNFxqTtd4geGrwdw=="
++  "resolved" "https://registry.npmjs.org/@firebase/app-types/-/app-types-0.6.3.tgz"
++  "version" "0.6.3"
++
++"@firebase/app@0.6.30", "@firebase/app@0.x":
++  "integrity" "sha512-uAYEDXyK0mmpZ8hWQj5TNd7WVvfsU8PgsqKpGljbFBG/HhsH8KbcykWAAA+c1PqL7dt/dbt0Reh1y9zEdYzMhg=="
++  "resolved" "https://registry.npmjs.org/@firebase/app/-/app-0.6.30.tgz"
++  "version" "0.6.30"
++  dependencies:
++    "@firebase/app-types" "0.6.3"
++    "@firebase/component" "0.5.6"
++    "@firebase/logger" "0.2.6"
++    "@firebase/util" "1.3.0"
++    "dom-storage" "2.1.0"
++    "tslib" "^2.1.0"
++    "xmlhttprequest" "1.8.0"
++
++"@firebase/auth-interop-types@0.1.6":
++  "integrity" "sha512-etIi92fW3CctsmR9e3sYM3Uqnoq861M0Id9mdOPF6PWIg38BXL5k4upCNBggGUpLIS0H1grMOvy/wn1xymwe2g=="
++  "resolved" "https://registry.npmjs.org/@firebase/auth-interop-types/-/auth-interop-types-0.1.6.tgz"
++  "version" "0.1.6"
++
++"@firebase/auth-types@0.10.3":
++  "integrity" "sha512-zExrThRqyqGUbXOFrH/sowuh2rRtfKHp9SBVY2vOqKWdCX1Ztn682n9WLtlUDsiYVIbBcwautYWk2HyCGFv0OA=="
++  "resolved" "https://registry.npmjs.org/@firebase/auth-types/-/auth-types-0.10.3.tgz"
++  "version" "0.10.3"
++
++"@firebase/auth@0.16.8":
++  "integrity" "sha512-mR0UXG4LirWIfOiCWxVmvz1o23BuKGxeItQ2cCUgXLTjNtWJXdcky/356iTUsd7ZV5A78s2NHeN5tIDDG6H4rg=="
++  "resolved" "https://registry.npmjs.org/@firebase/auth/-/auth-0.16.8.tgz"
++  "version" "0.16.8"
++  dependencies:
++    "@firebase/auth-types" "0.10.3"
++
++"@firebase/component@0.5.6":
++  "integrity" "sha512-GyQJ+2lrhsDqeGgd1VdS7W+Y6gNYyI0B51ovNTxeZVG/W8I7t9MwEiCWsCvfm5wQgfsKp9dkzOcJrL5k8oVO/Q=="
++  "resolved" "https://registry.npmjs.org/@firebase/component/-/component-0.5.6.tgz"
++  "version" "0.5.6"
++  dependencies:
++    "@firebase/util" "1.3.0"
++    "tslib" "^2.1.0"
++
++"@firebase/database-types@0.8.0":
++  "integrity" "sha512-7IdjAFRfPWyG3b4wcXyghb3Y1CLCSJFZIg1xl5GbTVMttSQFT4B5NYdhsfA34JwAsv5pMzPpjOaS3/K9XJ2KiA=="
++  "resolved" "https://registry.npmjs.org/@firebase/database-types/-/database-types-0.8.0.tgz"
++  "version" "0.8.0"
++  dependencies:
++    "@firebase/app-types" "0.6.3"
++    "@firebase/util" "1.3.0"
++
++"@firebase/database@0.11.0":
++  "integrity" "sha512-b/kwvCubr6G9coPlo48PbieBDln7ViFBHOGeVt/bt82yuv5jYZBEYAac/mtOVSxpf14aMo/tAN+Edl6SWqXApw=="
++  "resolved" "https://registry.npmjs.org/@firebase/database/-/database-0.11.0.tgz"
++  "version" "0.11.0"
++  dependencies:
++    "@firebase/auth-interop-types" "0.1.6"
++    "@firebase/component" "0.5.6"
++    "@firebase/database-types" "0.8.0"
++    "@firebase/logger" "0.2.6"
++    "@firebase/util" "1.3.0"
++    "faye-websocket" "0.11.3"
++    "tslib" "^2.1.0"
++
++"@firebase/firestore-types@2.4.0":
++  "integrity" "sha512-0dgwfuNP7EN6/OlK2HSNSQiQNGLGaRBH0gvgr1ngtKKJuJFuq0Z48RBMeJX9CGjV4TP9h2KaB+KrUKJ5kh1hMg=="
++  "resolved" "https://registry.npmjs.org/@firebase/firestore-types/-/firestore-types-2.4.0.tgz"
++  "version" "2.4.0"
++
++"@firebase/firestore@2.4.1":
++  "integrity" "sha512-S51XnILdhNt0ZA6bPnbxpqKPI5LatbGY9RQjA2TmATrjSPE3aWndJsLIrutI6aS9K+YFwy5+HLDKVRFYQfmKAw=="
++  "resolved" "https://registry.npmjs.org/@firebase/firestore/-/firestore-2.4.1.tgz"
++  "version" "2.4.1"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/firestore-types" "2.4.0"
++    "@firebase/logger" "0.2.6"
++    "@firebase/util" "1.3.0"
++    "@firebase/webchannel-wrapper" "0.5.1"
++    "@grpc/grpc-js" "^1.3.2"
++    "@grpc/proto-loader" "^0.6.0"
++    "node-fetch" "2.6.7"
++    "tslib" "^2.1.0"
++
++"@firebase/functions-types@0.4.0":
++  "integrity" "sha512-3KElyO3887HNxtxNF1ytGFrNmqD+hheqjwmT3sI09FaDCuaxGbOnsXAXH2eQ049XRXw9YQpHMgYws/aUNgXVyQ=="
++  "resolved" "https://registry.npmjs.org/@firebase/functions-types/-/functions-types-0.4.0.tgz"
++  "version" "0.4.0"
++
++"@firebase/functions@0.6.16":
++  "integrity" "sha512-KDPjLKSjtR/zEH06YXXbdWTi8gzbKHGRzL/+ibZQA/1MLq0IilfM+1V1Fh8bADsMCUkxkqoc1yiA4SUbH5ajJA=="
++  "resolved" "https://registry.npmjs.org/@firebase/functions/-/functions-0.6.16.tgz"
++  "version" "0.6.16"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/functions-types" "0.4.0"
++    "@firebase/messaging-types" "0.5.0"
++    "node-fetch" "2.6.7"
++    "tslib" "^2.1.0"
++
++"@firebase/installations-types@0.3.4":
++  "integrity" "sha512-RfePJFovmdIXb6rYwtngyxuEcWnOrzdZd9m7xAW0gRxDIjBT20n3BOhjpmgRWXo/DAxRmS7bRjWAyTHY9cqN7Q=="
++  "resolved" "https://registry.npmjs.org/@firebase/installations-types/-/installations-types-0.3.4.tgz"
++  "version" "0.3.4"
++
++"@firebase/installations@0.4.32":
++  "integrity" "sha512-K4UlED1Vrhd2rFQQJih+OgEj8OTtrtH4+Izkx7ip2bhXSc+unk8ZhnF69D0kmh7zjXAqEDJrmHs9O5fI3rV6Tw=="
++  "resolved" "https://registry.npmjs.org/@firebase/installations/-/installations-0.4.32.tgz"
++  "version" "0.4.32"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/installations-types" "0.3.4"
++    "@firebase/util" "1.3.0"
++    "idb" "3.0.2"
++    "tslib" "^2.1.0"
++
++"@firebase/logger@0.2.6":
++  "integrity" "sha512-KIxcUvW/cRGWlzK9Vd2KB864HlUnCfdTH0taHE0sXW5Xl7+W68suaeau1oKNEqmc3l45azkd4NzXTCWZRZdXrw=="
++  "resolved" "https://registry.npmjs.org/@firebase/logger/-/logger-0.2.6.tgz"
++  "version" "0.2.6"
++
++"@firebase/messaging-types@0.5.0":
++  "integrity" "sha512-QaaBswrU6umJYb/ZYvjR5JDSslCGOH6D9P136PhabFAHLTR4TWjsaACvbBXuvwrfCXu10DtcjMxqfhdNIB1Xfg=="
++  "resolved" "https://registry.npmjs.org/@firebase/messaging-types/-/messaging-types-0.5.0.tgz"
++  "version" "0.5.0"
++
++"@firebase/messaging@0.8.0":
++  "integrity" "sha512-hkFHDyVe1kMcY9KEG+prjCbvS6MtLUgVFUbbQqq7JQfiv58E07YCzRUcMrJolbNi/1QHH6Jv16DxNWjJB9+/qA=="
++  "resolved" "https://registry.npmjs.org/@firebase/messaging/-/messaging-0.8.0.tgz"
++  "version" "0.8.0"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/installations" "0.4.32"
++    "@firebase/messaging-types" "0.5.0"
++    "@firebase/util" "1.3.0"
++    "idb" "3.0.2"
++    "tslib" "^2.1.0"
++
++"@firebase/performance-types@0.0.13":
++  "integrity" "sha512-6fZfIGjQpwo9S5OzMpPyqgYAUZcFzZxHFqOyNtorDIgNXq33nlldTL/vtaUZA8iT9TT5cJlCrF/jthKU7X21EA=="
++  "resolved" "https://registry.npmjs.org/@firebase/performance-types/-/performance-types-0.0.13.tgz"
++  "version" "0.0.13"
++
++"@firebase/performance@0.4.18":
++  "integrity" "sha512-lvZW/TVDne2TyOpWbv++zjRn277HZpbjxbIPfwtnmKjVY1gJ+H77Qi1c2avVIc9hg80uGX/5tNf4pOApNDJLVg=="
++  "resolved" "https://registry.npmjs.org/@firebase/performance/-/performance-0.4.18.tgz"
++  "version" "0.4.18"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/installations" "0.4.32"
++    "@firebase/logger" "0.2.6"
++    "@firebase/performance-types" "0.0.13"
++    "@firebase/util" "1.3.0"
++    "tslib" "^2.1.0"
++
++"@firebase/polyfill@0.3.36":
++  "integrity" "sha512-zMM9oSJgY6cT2jx3Ce9LYqb0eIpDE52meIzd/oe/y70F+v9u1LDqk5kUF5mf16zovGBWMNFmgzlsh6Wj0OsFtg=="
++  "resolved" "https://registry.npmjs.org/@firebase/polyfill/-/polyfill-0.3.36.tgz"
++  "version" "0.3.36"
++  dependencies:
++    "core-js" "3.6.5"
++    "promise-polyfill" "8.1.3"
++    "whatwg-fetch" "2.0.4"
++
++"@firebase/remote-config-types@0.1.9":
++  "integrity" "sha512-G96qnF3RYGbZsTRut7NBX0sxyczxt1uyCgXQuH/eAfUCngxjEGcZQnBdy6mvSdqdJh5mC31rWPO4v9/s7HwtzA=="
++  "resolved" "https://registry.npmjs.org/@firebase/remote-config-types/-/remote-config-types-0.1.9.tgz"
++  "version" "0.1.9"
++
++"@firebase/remote-config@0.1.43":
++  "integrity" "sha512-laNM4MN0CfeSp7XCVNjYOC4DdV6mj0l2rzUh42x4v2wLTweCoJ/kc1i4oWMX9TI7Jw8Am5Wl71Awn1J2pVe5xA=="
++  "resolved" "https://registry.npmjs.org/@firebase/remote-config/-/remote-config-0.1.43.tgz"
++  "version" "0.1.43"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/installations" "0.4.32"
++    "@firebase/logger" "0.2.6"
++    "@firebase/remote-config-types" "0.1.9"
++    "@firebase/util" "1.3.0"
++    "tslib" "^2.1.0"
++
++"@firebase/storage-types@0.5.0":
++  "integrity" "sha512-6Wv3Lu7s18hsgW7HG4BFwycTquZ3m/C8bjBoOsmPu0TD6M1GKwCzOC7qBdN7L6tRYPh8ipTj5+rPFrmhGfUVKA=="
++  "resolved" "https://registry.npmjs.org/@firebase/storage-types/-/storage-types-0.5.0.tgz"
++  "version" "0.5.0"
++
++"@firebase/storage@0.7.1":
++  "integrity" "sha512-T7uH6lAgNs/Zq8V3ElvR3ypTQSGWon/R7WRM2I5Td/d0PTsNIIHSAGB6q4Au8mQEOz3HDTfjNQ9LuQ07R6S2ug=="
++  "resolved" "https://registry.npmjs.org/@firebase/storage/-/storage-0.7.1.tgz"
++  "version" "0.7.1"
++  dependencies:
++    "@firebase/component" "0.5.6"
++    "@firebase/storage-types" "0.5.0"
++    "@firebase/util" "1.3.0"
++    "node-fetch" "2.6.7"
++    "tslib" "^2.1.0"
++
++"@firebase/util@1.3.0", "@firebase/util@1.x":
++  "integrity" "sha512-SESvmYwuKOVCZ1ZxLbberbx+9cnbxpCa4CG2FUSQYqN6Ab8KyltegMDIsqMw5KyIBZ4n1phfHoOa22xo5NzAlQ=="
++  "resolved" "https://registry.npmjs.org/@firebase/util/-/util-1.3.0.tgz"
++  "version" "1.3.0"
++  dependencies:
++    "tslib" "^2.1.0"
++
++"@firebase/webchannel-wrapper@0.5.1":
++  "integrity" "sha512-dZMzN0uAjwJXWYYAcnxIwXqRTZw3o14hGe7O6uhwjD1ZQWPVYA5lASgnNskEBra0knVBsOXB4KXg+HnlKewN/A=="
++  "resolved" "https://registry.npmjs.org/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.5.1.tgz"
++  "version" "0.5.1"
++
++"@grpc/grpc-js@^1.3.2":
++  "integrity" "sha512-eBM03pu9hd3VqDQG+kHahiG1x80RGkkqqRb1Pchcwqej/KkAH95gAvKs6laqaHCycYaPK+TKuNQnOz9UXYA8qw=="
++  "resolved" "https://registry.npmjs.org/@grpc/grpc-js/-/grpc-js-1.6.7.tgz"
++  "version" "1.6.7"
++  dependencies:
++    "@grpc/proto-loader" "^0.6.4"
++    "@types/node" ">=12.12.47"
++
++"@grpc/proto-loader@^0.6.0", "@grpc/proto-loader@^0.6.4":
++  "integrity" "sha512-UlcCS8VbsU9d3XTXGiEVFonN7hXk+oMXZtoHHG2oSA1/GcDP1q6OUgs20PzHDGizzyi8ufGSUDlk3O2NyY7leg=="
++  "resolved" "https://registry.npmjs.org/@grpc/proto-loader/-/proto-loader-0.6.9.tgz"
++  "version" "0.6.9"
++  dependencies:
++    "@types/long" "^4.0.1"
++    "lodash.camelcase" "^4.3.0"
++    "long" "^4.0.0"
++    "protobufjs" "^6.10.0"
++    "yargs" "^16.2.0"
++
+ "@humanwhocodes/config-array@^0.9.2":
+   "integrity" "sha512-3xSMlXHh03hCcCmFc0rbKp3Ivt2PFEJnQUJDDMTJQ2wkECZWdq4GePs2ctc5H8zV+cHPaq8k2vU8mrQjA6iHdQ=="
+   "resolved" "https://registry.npmjs.org/@humanwhocodes/config-array/-/config-array-0.9.3.tgz"
+@@ -1409,6 +1676,59 @@
+     "schema-utils" "^3.0.0"
+     "source-map" "^0.7.3"
+ 
++"@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
++  "integrity" "sha1-m4sMxmPWaafY9vXQiToU00jzD78="
++  "resolved" "https://registry.npmjs.org/@protobufjs/aspromise/-/aspromise-1.1.2.tgz"
++  "version" "1.1.2"
++
++"@protobufjs/base64@^1.1.2":
++  "integrity" "sha512-AZkcAA5vnN/v4PDqKyMR5lx7hZttPDgClv83E//FMNhR2TMcLUhfRUBHCmSl0oi9zMgDDqRUJkSxO3wm85+XLg=="
++  "resolved" "https://registry.npmjs.org/@protobufjs/base64/-/base64-1.1.2.tgz"
++  "version" "1.1.2"
++
++"@protobufjs/codegen@^2.0.4":
++  "integrity" "sha512-YyFaikqM5sH0ziFZCN3xDC7zeGaB/d0IUb9CATugHWbd1FRFwWwt4ld4OYMPWu5a3Xe01mGAULCdqhMlPl29Jg=="
++  "resolved" "https://registry.npmjs.org/@protobufjs/codegen/-/codegen-2.0.4.tgz"
++  "version" "2.0.4"
++
++"@protobufjs/eventemitter@^1.1.0":
++  "integrity" "sha1-NVy8mLr61ZePntCV85diHx0Ga3A="
++  "resolved" "https://registry.npmjs.org/@protobufjs/eventemitter/-/eventemitter-1.1.0.tgz"
++  "version" "1.1.0"
++
++"@protobufjs/fetch@^1.1.0":
++  "integrity" "sha1-upn7WYYUr2VwDBYZ/wbUVLDYTEU="
++  "resolved" "https://registry.npmjs.org/@protobufjs/fetch/-/fetch-1.1.0.tgz"
++  "version" "1.1.0"
++  dependencies:
++    "@protobufjs/aspromise" "^1.1.1"
++    "@protobufjs/inquire" "^1.1.0"
++
++"@protobufjs/float@^1.0.2":
++  "integrity" "sha1-Xp4avctz/Ap8uLKR33jIy9l7h9E="
++  "resolved" "https://registry.npmjs.org/@protobufjs/float/-/float-1.0.2.tgz"
++  "version" "1.0.2"
++
++"@protobufjs/inquire@^1.1.0":
++  "integrity" "sha1-/yAOPnzyQp4tyvwRQIKOjMY48Ik="
++  "resolved" "https://registry.npmjs.org/@protobufjs/inquire/-/inquire-1.1.0.tgz"
++  "version" "1.1.0"
++
++"@protobufjs/path@^1.1.2":
++  "integrity" "sha1-bMKyDFya1q0NzP0hynZz2Nf79o0="
++  "resolved" "https://registry.npmjs.org/@protobufjs/path/-/path-1.1.2.tgz"
++  "version" "1.1.2"
++
++"@protobufjs/pool@^1.1.0":
++  "integrity" "sha1-Cf0V8tbTq/qbZbw2ZQbWrXhG/1Q="
++  "resolved" "https://registry.npmjs.org/@protobufjs/pool/-/pool-1.1.0.tgz"
++  "version" "1.1.0"
++
++"@protobufjs/utf8@^1.1.0":
++  "integrity" "sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA="
++  "resolved" "https://registry.npmjs.org/@protobufjs/utf8/-/utf8-1.1.0.tgz"
++  "version" "1.1.0"
++
+ "@rollup/plugin-babel@^5.2.0":
+   "integrity" "sha512-9uIC8HZOnVLrLHxayq/PTzw+uS25E14KPUBh5ktF+18Mjo5yK0ToMMx6epY0uEgkjwJw0aBW4x2horYXh8juWw=="
+   "resolved" "https://registry.npmjs.org/@rollup/plugin-babel/-/plugin-babel-5.3.0.tgz"
+@@ -1819,12 +2139,17 @@
+   "resolved" "https://registry.npmjs.org/@types/lodash/-/lodash-4.14.178.tgz"
+   "version" "4.14.178"
+ 
++"@types/long@^4.0.1":
++  "integrity" "sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA=="
++  "resolved" "https://registry.npmjs.org/@types/long/-/long-4.0.2.tgz"
++  "version" "4.0.2"
++
+ "@types/mime@^1":
+   "integrity" "sha512-YATxVxgRqNH6nHEIsvg6k2Boc1JHI9ZbH5iWFFv/MTkchz3b1ieGDa5T0a9RznNdI0KhVbdbWSN+KWWrQZRxTw=="
+   "resolved" "https://registry.npmjs.org/@types/mime/-/mime-1.3.2.tgz"
+   "version" "1.3.2"
+ 
+-"@types/node@*":
++"@types/node@*", "@types/node@>=12.12.47", "@types/node@>=13.7.0":
+   "integrity" "sha512-e8PUNQy1HgJGV3iU/Bp2+D/DXh3PYeyli8LgIwsQcs1Ar1LoaWHSIT6Rw+H2rNJmiq6SNWiDytfx8+gYj7wDHw=="
+   "resolved" "https://registry.npmjs.org/@types/node/-/node-17.0.17.tgz"
+   "version" "17.0.17"
+@@ -2371,7 +2696,14 @@
+   "resolved" "https://registry.npmjs.org/antd-css-utilities/-/antd-css-utilities-1.0.3.tgz"
+   "version" "1.0.3"
+ 
+-"antd@^4.19.2":
++"antd-img-crop@^4.2.3":
++  "integrity" "sha512-YZgsUdfHnkBCOQ1sLXTwfVRgBdMRM//joddFnSlWe/QU52m8PPbBxtgt0YdEf+UTPXOAx6RQJp1gUjAmMU2knA=="
++  "resolved" "https://registry.npmjs.org/antd-img-crop/-/antd-img-crop-4.2.3.tgz"
++  "version" "4.2.3"
++  dependencies:
++    "react-easy-crop" "^4.1.5"
++
++"antd@^4.19.2", "antd@>=4.0.0":
+   "integrity" "sha512-qXM6d6hFsT5rZJB4TRTHl32dixu1IHmPD0QLzG5YuUpzecv6QoTr1ZMp2/I1MMCb1+n99yQ5gFx7U677AbL5hw=="
+   "resolved" "https://registry.npmjs.org/antd/-/antd-4.19.2.tgz"
+   "version" "4.19.2"
+@@ -3214,6 +3546,11 @@
+   "resolved" "https://registry.npmjs.org/core-js/-/core-js-3.21.0.tgz"
+   "version" "3.21.0"
+ 
++"core-js@3.6.5":
++  "integrity" "sha512-vZVEEwZoIsI+vPEuoF9Iqf5H7/M3eeQqWlQnYa8FSKKePuYTf5MWnxb5SDAzCa60b3JBRS5g9b+Dq7b1y/RCrA=="
++  "resolved" "https://registry.npmjs.org/core-js/-/core-js-3.6.5.tgz"
++  "version" "3.6.5"
++
+ "core-util-is@~1.0.0":
+   "integrity" "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="
+   "resolved" "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz"
+@@ -3757,6 +4094,11 @@
+     "domelementtype" "^2.0.1"
+     "entities" "^2.0.0"
+ 
++"dom-storage@2.1.0":
++  "integrity" "sha512-g6RpyWXzl0RR6OTElHKBl7nwnK87GUyZMYC7JWsB/IA73vpqK2K6LT39x4VepLxlSsWBFrPVLnsSR5Jyty0+2Q=="
++  "resolved" "https://registry.npmjs.org/dom-storage/-/dom-storage-2.1.0.tgz"
++  "version" "2.1.0"
++
+ "domelementtype@^2.0.1", "domelementtype@^2.2.0":
+   "integrity" "sha512-DtBMo82pv1dFtUmHyr48beiuq792Sxohr+8Hm9zoxklYPfa6n0Z3Byjj2IV7bmr2IyqClnqEQhfgHJJ5QF0R5A=="
+   "resolved" "https://registry.npmjs.org/domelementtype/-/domelementtype-2.2.0.tgz"
+@@ -4354,6 +4696,13 @@
+   dependencies:
+     "websocket-driver" ">=0.5.1"
+ 
++"faye-websocket@0.11.3":
++  "integrity" "sha512-D2y4bovYpzziGgbHYtGCMjlJM36vAl/y+xUyn1C+FVx8szd1E+86KwVw6XvYSzOP8iMpm1X0I4xJD+QtUb36OA=="
++  "resolved" "https://registry.npmjs.org/faye-websocket/-/faye-websocket-0.11.3.tgz"
++  "version" "0.11.3"
++  dependencies:
++    "websocket-driver" ">=0.5.1"
++
+ "fb-watchman@^2.0.0":
+   "integrity" "sha512-DkPJKQeY6kKwmuMretBhr7G6Vodr7bFwDYTXIkfG1gjvNpaxBTQV3PbXg6bR1c1UP4jPOX0jHUbbHANL9vRjVg=="
+   "resolved" "https://registry.npmjs.org/fb-watchman/-/fb-watchman-2.0.1.tgz"
+@@ -4455,6 +4804,27 @@
+     "locate-path" "^6.0.0"
+     "path-exists" "^4.0.0"
+ 
++"firebase@^8.10.1":
++  "integrity" "sha512-84z/zqF8Y5IpUYN8nREZ/bxbGtF5WJDOBy4y0hAxRzGpB5+2tw9PQgtTnUzk6MQiVEf/WOniMUL3pCVXKsxALw=="
++  "resolved" "https://registry.npmjs.org/firebase/-/firebase-8.10.1.tgz"
++  "version" "8.10.1"
++  dependencies:
++    "@firebase/analytics" "0.6.18"
++    "@firebase/app" "0.6.30"
++    "@firebase/app-check" "0.3.2"
++    "@firebase/app-types" "0.6.3"
++    "@firebase/auth" "0.16.8"
++    "@firebase/database" "0.11.0"
++    "@firebase/firestore" "2.4.1"
++    "@firebase/functions" "0.6.16"
++    "@firebase/installations" "0.4.32"
++    "@firebase/messaging" "0.8.0"
++    "@firebase/performance" "0.4.18"
++    "@firebase/polyfill" "0.3.36"
++    "@firebase/remote-config" "0.1.43"
++    "@firebase/storage" "0.7.1"
++    "@firebase/util" "1.3.0"
++
+ "flat-cache@^3.0.4":
+   "integrity" "sha512-dm9s5Pw7Jc0GvMYbshN6zchCA9RgQlzzEZX3vylR9IqFfS8XciblUXOKfW6SiuJ0e13eDYZoZV5wdrev7P3Nwg=="
+   "resolved" "https://registry.npmjs.org/flat-cache/-/flat-cache-3.0.4.tgz"
+@@ -4948,6 +5318,11 @@
+   "resolved" "https://registry.npmjs.org/idb/-/idb-6.1.5.tgz"
+   "version" "6.1.5"
+ 
++"idb@3.0.2":
++  "integrity" "sha512-+FLa/0sTXqyux0o6C+i2lOR0VoS60LU/jzUo5xjfY6+7sEEgy4Gz1O7yFBXvjd7N0NyIGWIRg8DcQSLEG+VSPw=="
++  "resolved" "https://registry.npmjs.org/idb/-/idb-3.0.2.tgz"
++  "version" "3.0.2"
++
+ "identity-obj-proxy@^3.0.0":
+   "integrity" "sha1-lNK9qWCERT7zb7xarsN+D3nx/BQ="
+   "resolved" "https://registry.npmjs.org/identity-obj-proxy/-/identity-obj-proxy-3.0.0.tgz"
+@@ -5997,6 +6372,11 @@
+   "resolved" "https://registry.npmjs.org/lodash-es/-/lodash-es-4.17.21.tgz"
+   "version" "4.17.21"
+ 
++"lodash.camelcase@^4.3.0":
++  "integrity" "sha1-soqmKIorn8ZRA1x3EfZathkDMaY="
++  "resolved" "https://registry.npmjs.org/lodash.camelcase/-/lodash.camelcase-4.3.0.tgz"
++  "version" "4.3.0"
++
+ "lodash.debounce@^4.0.8":
+   "integrity" "sha1-gteb/zCmfEAF/9XiUVMArZyk168="
+   "resolved" "https://registry.npmjs.org/lodash.debounce/-/lodash.debounce-4.0.8.tgz"
+@@ -6027,6 +6407,11 @@
+   "resolved" "https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"
+   "version" "4.17.21"
+ 
++"long@^4.0.0":
++  "integrity" "sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA=="
++  "resolved" "https://registry.npmjs.org/long/-/long-4.0.0.tgz"
++  "version" "4.0.0"
++
+ "loose-envify@^1.0.0", "loose-envify@^1.1.0", "loose-envify@^1.4.0":
+   "integrity" "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q=="
+   "resolved" "https://registry.npmjs.org/loose-envify/-/loose-envify-1.4.0.tgz"
+@@ -6260,6 +6645,13 @@
+     "lower-case" "^2.0.2"
+     "tslib" "^2.0.3"
+ 
++"node-fetch@2.6.7":
++  "integrity" "sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ=="
++  "resolved" "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.7.tgz"
++  "version" "2.6.7"
++  dependencies:
++    "whatwg-url" "^5.0.0"
++
+ "node-forge@^1.2.0":
+   "integrity" "sha512-Fcvtbb+zBcZXbTTVwqGA5W+MKBj56UjVRevvchv5XrcyXbmNdesfZL37nlcWOfpgHhgmxApw3tQbTr4CqNmX4w=="
+   "resolved" "https://registry.npmjs.org/node-forge/-/node-forge-1.2.1.tgz"
+@@ -6302,6 +6694,11 @@
+   "resolved" "https://registry.npmjs.org/normalize-url/-/normalize-url-6.1.0.tgz"
+   "version" "6.1.0"
+ 
++"normalize-wheel@^1.0.1":
++  "integrity" "sha1-rsiGr/2wRQcNhWRH32Ls+GFG7EU="
++  "resolved" "https://registry.npmjs.org/normalize-wheel/-/normalize-wheel-1.0.1.tgz"
++  "version" "1.0.1"
++
+ "npm-run-path@^4.0.1":
+   "integrity" "sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw=="
+   "resolved" "https://registry.npmjs.org/npm-run-path/-/npm-run-path-4.0.1.tgz"
+@@ -7242,6 +7639,11 @@
+   "resolved" "https://registry.npmjs.org/process-nextick-args/-/process-nextick-args-2.0.1.tgz"
+   "version" "2.0.1"
+ 
++"promise-polyfill@8.1.3":
++  "integrity" "sha512-MG5r82wBzh7pSKDRa9y+vllNHz3e3d4CNj1PQE4BQYxLme0gKYYBm9YENq+UkEikyZ0XbiGWxYlVw3Rl9O/U8g=="
++  "resolved" "https://registry.npmjs.org/promise-polyfill/-/promise-polyfill-8.1.3.tgz"
++  "version" "8.1.3"
++
+ "promise@^8.1.0":
+   "integrity" "sha512-W04AqnILOL/sPRXziNicCjSNRruLAuIHEOVBazepu0545DDNGYHz7ar9ZgZ1fMU8/MA4mVxp5rkBWRi6OXIy3Q=="
+   "resolved" "https://registry.npmjs.org/promise/-/promise-8.1.0.tgz"
+@@ -7271,6 +7673,25 @@
+   "resolved" "https://registry.npmjs.org/property-expr/-/property-expr-2.0.5.tgz"
+   "version" "2.0.5"
+ 
++"protobufjs@^6.10.0":
++  "integrity" "sha512-4BQJoPooKJl2G9j3XftkIXjoC9C0Av2NOrWmbLWT1vH32GcSUHjM0Arra6UfTsVyfMAuFzaLucXn1sadxJydAw=="
++  "resolved" "https://registry.npmjs.org/protobufjs/-/protobufjs-6.11.2.tgz"
++  "version" "6.11.2"
++  dependencies:
++    "@protobufjs/aspromise" "^1.1.2"
++    "@protobufjs/base64" "^1.1.2"
++    "@protobufjs/codegen" "^2.0.4"
++    "@protobufjs/eventemitter" "^1.1.0"
++    "@protobufjs/fetch" "^1.1.0"
++    "@protobufjs/float" "^1.0.2"
++    "@protobufjs/inquire" "^1.1.0"
++    "@protobufjs/path" "^1.1.2"
++    "@protobufjs/pool" "^1.1.0"
++    "@protobufjs/utf8" "^1.1.0"
++    "@types/long" "^4.0.1"
++    "@types/node" ">=13.7.0"
++    "long" "^4.0.0"
++
+ "proxy-addr@~2.0.7":
+   "integrity" "sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg=="
+   "resolved" "https://registry.npmjs.org/proxy-addr/-/proxy-addr-2.0.7.tgz"
+@@ -7737,7 +8158,7 @@
+     "strip-ansi" "^6.0.1"
+     "text-table" "^0.2.0"
+ 
+-"react-dom@*", "react-dom@^17.0.2", "react-dom@>=0.14.0", "react-dom@>=16.0.0", "react-dom@>=16.11.0", "react-dom@>=16.8", "react-dom@>=16.9.0":
++"react-dom@*", "react-dom@^17.0.2", "react-dom@>=0.14.0", "react-dom@>=16.0.0", "react-dom@>=16.11.0", "react-dom@>=16.4.0", "react-dom@>=16.8", "react-dom@>=16.8.0", "react-dom@>=16.9.0":
+   "integrity" "sha512-s4h96KtLDUQlsENhMn1ar8t2bEa+q/YAtj8pPPdIjPDGBDIVNsrD9aXNWqspUe6AzKCIG0C1HZZLqLV7qpOBGA=="
+   "resolved" "https://registry.npmjs.org/react-dom/-/react-dom-17.0.2.tgz"
+   "version" "17.0.2"
+@@ -7746,6 +8167,14 @@
+     "object-assign" "^4.1.1"
+     "scheduler" "^0.20.2"
+ 
++"react-easy-crop@^4.1.5":
++  "integrity" "sha512-NJdeG6JPlOvXPNcQlmyEyjuseTiZVDa0M5X6BwTxSPR30MG3ROsSHKeGl5SQdI3TfmsoEgvl7MbM+AjFGj+faw=="
++  "resolved" "https://registry.npmjs.org/react-easy-crop/-/react-easy-crop-4.2.0.tgz"
++  "version" "4.2.0"
++  dependencies:
++    "normalize-wheel" "^1.0.1"
++    "tslib" "2.0.1"
++
+ "react-error-overlay@^6.0.10":
+   "integrity" "sha512-mKR90fX7Pm5seCOfz8q9F+66VCc1PGsWSBxKbITjfKVQHMNF2zudxHnMdJiB1fRCb+XsbQV9sO9DCkgsMQgBIA=="
+   "resolved" "https://registry.npmjs.org/react-error-overlay/-/react-error-overlay-6.0.10.tgz"
+@@ -7871,7 +8300,7 @@
+   optionalDependencies:
+     "fsevents" "^2.3.2"
+ 
+-"react@*", "react@^16.8.3 || ^17 || ^18", "react@^17.0.2", "react@>= 16", "react@>=0.14.0", "react@>=16.0.0", "react@>=16.11.0", "react@>=16.8", "react@>=16.8.0", "react@>=16.9.0", "react@17.0.2":
++"react@*", "react@^16.8.3 || ^17 || ^18", "react@^17.0.2", "react@>= 16", "react@>=0.14.0", "react@>=16.0.0", "react@>=16.11.0", "react@>=16.4.0", "react@>=16.8", "react@>=16.8.0", "react@>=16.9.0", "react@17.0.2":
+   "integrity" "sha512-gnhPt75i/dq/z3/6q/0asP78D0u592D5L1pd7M8P+dck6Fu/jJeL6iVVK23fptSUZj8Vjf++7wXA8UNclGQcbA=="
+   "resolved" "https://registry.npmjs.org/react/-/react-17.0.2.tgz"
+   "version" "17.0.2"
+@@ -8972,6 +9401,11 @@
+   dependencies:
+     "punycode" "^2.1.1"
+ 
++"tr46@~0.0.3":
++  "integrity" "sha1-gYT9NH2snNwYWZLzpmIuFLnZq2o="
++  "resolved" "https://registry.npmjs.org/tr46/-/tr46-0.0.3.tgz"
++  "version" "0.0.3"
++
+ "tryer@^1.0.1":
+   "integrity" "sha512-c3zayb8/kWWpycWYg87P71E1S1ZL6b6IJxfb5fvsUgsf0S2MVGaDhDXXjDMpdCpfWXqptc+4mXwmiy1ypXqRAA=="
+   "resolved" "https://registry.npmjs.org/tryer/-/tryer-1.0.1.tgz"
+@@ -9002,11 +9436,16 @@
+   "resolved" "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
+   "version" "1.14.1"
+ 
+-"tslib@^2.0.3":
++"tslib@^2.0.3", "tslib@^2.1.0":
+   "integrity" "sha512-77EbyPPpMz+FRFRuAFlWMtmgUWGe9UOG2Z25NqCwiIjRhOf5iKGuzSe5P2w1laq+FkRy4p+PCuVkJSGkzTEKVw=="
+   "resolved" "https://registry.npmjs.org/tslib/-/tslib-2.3.1.tgz"
+   "version" "2.3.1"
+ 
++"tslib@2.0.1":
++  "integrity" "sha512-SgIkNheinmEBgx1IUNirK0TUD4X9yjjBRTqqjggWCU3pUEqIk3/Uwl3yRixYKT6WjQuGiwDv4NomL3wqRCj+CQ=="
++  "resolved" "https://registry.npmjs.org/tslib/-/tslib-2.0.1.tgz"
++  "version" "2.0.1"
++
+ "tsutils@^3.21.0":
+   "integrity" "sha512-mHKK3iUXL+3UF6xL5k0PEhKRUBKPBCv/+RkEOpjRWxxx27KKRBmmA60A9pgOUvMi8GKhRMPEmjBRPzs2W7O1OA=="
+   "resolved" "https://registry.npmjs.org/tsutils/-/tsutils-3.21.0.tgz"
+@@ -9242,6 +9681,11 @@
+   "resolved" "https://registry.npmjs.org/web-vitals/-/web-vitals-2.1.4.tgz"
+   "version" "2.1.4"
+ 
++"webidl-conversions@^3.0.0":
++  "integrity" "sha1-JFNCdeKnvGvnvIZhHMFq4KVlSHE="
++  "resolved" "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz"
++  "version" "3.0.1"
++
+ "webidl-conversions@^4.0.2":
+   "integrity" "sha512-YQ+BmxuTgd6UXZW3+ICGfyqRyHXVlD5GtQr5+qjiNW7bF0cqrzX500HVXPBOvgXb5YnzDd+h0zqyv61KUD7+Sg=="
+   "resolved" "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-4.0.2.tgz"
+@@ -9389,11 +9833,24 @@
+   "resolved" "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-3.6.2.tgz"
+   "version" "3.6.2"
+ 
++"whatwg-fetch@2.0.4":
++  "integrity" "sha512-dcQ1GWpOD/eEQ97k66aiEVpNnapVj90/+R+SXTPYGHpYBBypfKJEQjLrvMZ7YXbKm21gXd4NcuxUTjiv1YtLng=="
++  "resolved" "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.4.tgz"
++  "version" "2.0.4"
++
+ "whatwg-mimetype@^2.3.0":
+   "integrity" "sha512-M4yMwr6mAnQz76TbJm914+gPpB/nCwvZbJU28cUD6dR004SAxDLOOSUaB1JDRqLtaOV/vi0IC5lEAGFgrjGv/g=="
+   "resolved" "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-2.3.0.tgz"
+   "version" "2.3.0"
+ 
++"whatwg-url@^5.0.0":
++  "integrity" "sha1-lmRU6HZUYuN2RNNib2dCzotwll0="
++  "resolved" "https://registry.npmjs.org/whatwg-url/-/whatwg-url-5.0.0.tgz"
++  "version" "5.0.0"
++  dependencies:
++    "tr46" "~0.0.3"
++    "webidl-conversions" "^3.0.0"
++
+ "whatwg-url@^7.0.0":
+   "integrity" "sha512-WUu7Rg1DroM7oQvGWfOiAK21n74Gg+T4elXEQYkOhtyLeWiJFoOGLXPKI/9gzIie9CtwVLm8wtw6YJdKyxSjeg=="
+   "resolved" "https://registry.npmjs.org/whatwg-url/-/whatwg-url-7.1.0.tgz"
+@@ -9657,6 +10114,11 @@
+   "resolved" "https://registry.npmjs.org/xmlchars/-/xmlchars-2.2.0.tgz"
+   "version" "2.2.0"
+ 
++"xmlhttprequest@1.8.0":
++  "integrity" "sha1-Z/4HXFwk/vOfnWX197f+dRcZaPw="
++  "resolved" "https://registry.npmjs.org/xmlhttprequest/-/xmlhttprequest-1.8.0.tgz"
++  "version" "1.8.0"
++
+ "xtend@^4.0.2":
+   "integrity" "sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ=="
+   "resolved" "https://registry.npmjs.org/xtend/-/xtend-4.0.2.tgz"
+diff --git a/controllers/goods.js b/controllers/goods.js
+index 8419dac..03948e6 100644
+--- a/controllers/goods.js
++++ b/controllers/goods.js
+@@ -3,22 +3,23 @@ const Client = require('../models/Client')
+ 
+ exports.createGood = async (req, res, next) => {
+     const data = req.body
++    console.log(data)
+ 
+     try {
+         const good = await Good.create({ ...data })
+-
++        console.log(good)
+         res.status(201).json({
+-            success: true, 
++            success: true,
+             good
+         })
+-    } catch(e){
++    } catch (e) {
+         next(e)
+     }
+ }
+ 
+ exports.deleteGood = async (req, res, next) => {
+-    const _id  = req.params.id
+-    try {   
++    const _id = req.params.id
++    try {
+         await Good.deleteOne({ _id })
+ 
+         res.status(200).json({
+@@ -43,18 +44,18 @@ exports.updateGood = async (req, res, next) => {
+             success: true,
+             good
+         })
+-    } catch(e) {
+-        next(e)    
++    } catch (e) {
++        next(e)
+     }
+ }
+ 
+ exports.fetchGood = async (req, res, next) => {
+     const { id } = req.params
+ 
+-    try{
++    try {
+         const good = await Good.findById(id)
+         res.status(200).json({
+-            success: true, 
++            success: true,
+             good
+         })
+     } catch (e) {
+@@ -71,16 +72,16 @@ exports.fetchGoods = async (req, res, next) => {
+ 
+     try {
+         const goods = await Good.find({ category }).sort({ 'date': -1 }).limit(limit)
+-        
++
+         if (!goods.length) {
+             return res.status(204).json({ success: true, goods })
+-        } 
+-        
++        }
++
+         res.status(200).json({
+-            success: true, 
++            success: true,
+             goods
+         })
+-    } catch(e) {    
++    } catch (e) {
+         next(e)
+     }
+ }
+@@ -94,7 +95,7 @@ exports.saveCart = async (req, res, next) => {
+             path: 'cart.good',
+             select: 'name subDescription price',
+         })
+-        
++
+         client.cart = [...items]
+         client.save()
+ 
+@@ -104,7 +105,7 @@ exports.saveCart = async (req, res, next) => {
+                 cartItems: client.cart
+             }
+         })
+-    } catch(e) {
++    } catch (e) {
+         next(e)
+     }
+ }
+\ No newline at end of file
+diff --git a/models/Good.js b/models/Good.js
+index 2151d52..a777c19 100644
+--- a/models/Good.js
++++ b/models/Good.js
+@@ -21,7 +21,7 @@ const GoodSchema = new mongoose.Schema({
+         type: Number,
+         required: [true, "╨г╨║╨░╨╢╨╕╤В╨╡ ╤Ж╨╡╨╜╤Г"],
+     },
+-    images: [String],
++    images: [Object],
+     productionTime: String,
+     size: String,
+     sizes: [String],
+-- 
+2.34.1.windows.1
+
+
+From 8d87ff20dff16d81e51a0cf22a13992a68b6c35f Mon Sep 17 00:00:00 2001
+From: hinagawa <psalimullina@gmail.com>
+Date: Sun, 8 May 2022 22:25:04 +0300
+Subject: [PATCH 2/2] Added removing and adding images in goods
+
+---
+ client/src/helpers/time.js                    | 14 +++++++-
+ client/src/pages/Good/GoodForm.js             | 36 +++++++++++++++----
+ client/src/pages/Good/GoodFormContainer.js    | 29 ++-------------
+ client/src/pages/Goods/GoodItem.js            | 21 +++++++----
+ .../pages/Photobooks/PhotobooksContainer.js   |  1 -
+ controllers/goods.js                          |  3 --
+ 6 files changed, 61 insertions(+), 43 deletions(-)
+
+diff --git a/client/src/helpers/time.js b/client/src/helpers/time.js
+index 42c2612..4a62973 100644
+--- a/client/src/helpers/time.js
++++ b/client/src/helpers/time.js
+@@ -2,7 +2,7 @@ export const timingToProperCase = (d, n) => {
+     if (d === 'm') {
+         return n === 1 ? '╨╝╨╕╨╜╤Г╤В╤Г' : n > 1 && n < 5 ? '╨╝╨╕╨╜╤Г╤В╤Л' : '╨╝╨╕╨╜╤Г╤В'
+     } else if (d === 'h') {
+-        return n=== 1 ? '╤З╨░╤Б' : n> 1 && n< 5 ? '╤З╨░╤Б╨░' : '╤З╨░╤Б╨╛╨▓'
++        return n === 1 ? '╤З╨░╤Б' : n > 1 && n < 5 ? '╤З╨░╤Б╨░' : '╤З╨░╤Б╨╛╨▓'
+     } else if (d === 'd') {
+         return n === 1 ? '╨┤╨╡╨╜╤М' : n > 1 && n < 5 ? '╨┤╨╜╤П' : '╨┤╨╜╨╡╨╣'
+     }
+@@ -13,4 +13,16 @@ export const getTimeByString = timing => {
+     const n = parseInt(timing.substring(0, timing.length - 1))
+ 
+     return `${n} ${timingToProperCase(d, n)}`
++}
++
++export const getNowDateString = () => {
++    const date = new Date()
++    const res = date.getDate().toString() +
++        date.getMonth().toString() +
++        date.getFullYear().toString() +
++        date.getHours().toString() +
++        date.getMinutes().toString() +
++        date.getSeconds().toString() +
++        date.getMilliseconds().toString()
++    return res
+ }
+\ No newline at end of file
+diff --git a/client/src/pages/Good/GoodForm.js b/client/src/pages/Good/GoodForm.js
+index e1f4a3a..7183dcd 100644
+--- a/client/src/pages/Good/GoodForm.js
++++ b/client/src/pages/Good/GoodForm.js
+@@ -4,9 +4,10 @@ import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Uplo
+ import { ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
+ 
+ 
+-import { categories, categoriesList } from '../../helpers'
++import { categories, categoriesList, storage, getNowDateString } from '../../helpers'
+ 
+ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelete }) => {
++    const [fileArray, setFileArray] = useState(good?.images)
+     const [form] = Form.useForm()
+     const navigate = useNavigate()
+ 
+@@ -36,9 +37,31 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+             onOk: handleDeleteConfirm,
+         });
+     }
+-    const [fileList, setFileList] = useState(good?.images)
+-    const onChange = ({ fileList: newFileList }) => {
+-        setFileList(newFileList)
++
++    const onChange = async ({
++        file, fileList }) => {
++        if (file.status === 'removed') {
++            let imageRef = await storage.refFromURL(file.url);
++            await imageRef.delete().then(() => {
++                setFileArray(fileList)
++            }).catch(err => console.log(err))
++        }
++        else {
++            const fileName = getNowDateString() + file.name
++            const snapshot = await storage
++                .ref("images/" + fileName)
++                .put(file)
++            const url = await snapshot.ref.getDownloadURL()
++            console.log(url)
++            const firebaseInfo = {
++                name: fileName,
++                url,
++                thumbUrl: url
++            }
++            fileList.pop()
++            fileList.push(firebaseInfo)
++            setFileArray(fileList)
++        }
+     };
+ 
+     return (
+@@ -48,11 +71,12 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+             initialValues={initialValues}
+             onFinish={onFinish}
+         >
+-            <Card title={<CardTitle name={fileList ?? ''} />} bordered={false}>
++            <Card title={<CardTitle name={fileArray ?? ''} />} bordered={false}>
+                 <Typography.Title level={4}>╨Т╨╜╨╡╤И╨╜╨╕╨╣ ╨▓╨╕╨┤:</Typography.Title>
+                 <Form.Item name='imgInfo' >
+                     <Upload
+-                        defaultFileList={good?.images ?? []}
++                        defaultFileList={fileArray ?? []}
++                        beforeUpload={() => false}
+                         listType="picture"
+                         onChange={onChange}
+                     >
+diff --git a/client/src/pages/Good/GoodFormContainer.js b/client/src/pages/Good/GoodFormContainer.js
+index 3892192..50844b4 100644
+--- a/client/src/pages/Good/GoodFormContainer.js
++++ b/client/src/pages/Good/GoodFormContainer.js
+@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
+ import axios from 'axios'
+ 
+ import { withLayout } from '../../hocs'
+-import { getCategoryTitle, storage } from '../../helpers'
++import { getCategoryTitle } from '../../helpers'
+ import NotFound from '../../components/NotFound/NotFound'
+ 
+ import GoodForm from './GoodForm'
+@@ -33,30 +33,11 @@ const GoodFormContainer = ({ edit = false }) => {
+     }, [])
+ 
+     const handleCreate = async values => {
+-        const filesArray = values.imgInfo.fileList
+-        const firebasePaths = []
+         try {
+-            if (!!filesArray.length) {
+-                for (let key in filesArray) {
+-                    const snapshot = await storage
+-                        .ref("images/" + filesArray[key].name)
+-                        .put(filesArray[key].originFileObj)
+-                    const url = await snapshot.ref.getDownloadURL()
+-                    const firebaseInfo = {
+-                        name: filesArray[key].name,
+-                        url,
+-                        thumbUrl: url
+-                    }
+-                    firebasePaths.push(firebaseInfo)
+-                };
+-            }
+-            const variables = { ...values, category: values.category.value, images: firebasePaths }
+-            delete variables.imgInfo
++            const variables = { ...values, category: values.category.value, images: values.imgInfo?.fileList }
+             try {
+                 const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
+-
+                 const { good } = await data
+-
+                 navigate(`/${good.category}/${good._id}`)
+             } catch (err) {
+                 setError(err.response.data)
+@@ -68,14 +49,10 @@ const GoodFormContainer = ({ edit = false }) => {
+     }
+ 
+     const handleSave = async values => {
+-        // const filesArray = values.imgInfo.fileList
+-        const variables = { ...values, category: values.category.value }
+-        console.log(variables)
+-
++        const variables = { ...values, category: values.category.value, images: values.imgInfo?.fileList }
+         try {
+             const { data } = await axios.patch(`/api/goods/update/good/${goodId}`, variables, { headers: { "Content-Type": "application/json" } })
+             const { good } = await data
+-
+             navigate(`/${good.category}/${good._id}`)
+         } catch (err) {
+             setError(err.response.data)
+diff --git a/client/src/pages/Goods/GoodItem.js b/client/src/pages/Goods/GoodItem.js
+index bf2341d..39a5aab 100644
+--- a/client/src/pages/Goods/GoodItem.js
++++ b/client/src/pages/Goods/GoodItem.js
+@@ -4,12 +4,14 @@ import { Col, Card, Typography, Button, Skeleton } from 'antd'
+ 
+ import { getTimeByString } from '../../helpers'
+ 
+-import fallback from '../../assets/images/fallback.png'
+ import './goodItems.css'
+ 
+ const styles = {
+     card: { height: "100%", display: 'flex', flexDirection: 'column' },
+     block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
++    img: { objectFit: 'contain', height: '180px', zIndex: 2 },
++    imgBackground: { position: 'absolute', top: 0, width: '100%', height: '180px', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
++    backgroundContainer: { position: 'relative', backgroundColor: '#a6a6a6', display: 'flex', justifyContent: 'center' }
+ }
+ 
+ const GoodItem = ({ good, onAddItem }) => {
+@@ -23,11 +25,18 @@ const GoodItem = ({ good, onAddItem }) => {
+                 <Card
+                     hoverable
+                     cover={
+-                        <img
+-                            style={{ objectFit: 'contain' }}
+-                            alt={good?.name}
+-                            src={good?.images[0].url}
+-                        />
++                        <div style={styles.backgroundContainer}>
++                            <img
++                                style={styles.imgBackground}
++                                alt={good?.name}
++                                src={good?.images[0]?.url}
++                            />
++                            <img
++                                style={styles.img}
++                                alt={good?.name}
++                                src={good?.images[0]?.url}
++                            />
++                        </div>
+                     }
+                     style={styles.card} id="card-item"
+                 >
+diff --git a/client/src/pages/Photobooks/PhotobooksContainer.js b/client/src/pages/Photobooks/PhotobooksContainer.js
+index 9d0cd80..bad8822 100644
+--- a/client/src/pages/Photobooks/PhotobooksContainer.js
++++ b/client/src/pages/Photobooks/PhotobooksContainer.js
+@@ -23,7 +23,6 @@ const PhotobooksContainer = () => {
+             try {
+                 const { data } = await axios.get(`/api/goods/fetch/goods/photobooks&${limit}`, { headers: { "Content-Type": "application/json" } })
+                 setGoods(data.goods)
+-                console.log(data.goods)
+                 setTimeout(() => {
+                     setLoading(false)
+                     setMoreLoading(false)
+diff --git a/controllers/goods.js b/controllers/goods.js
+index 03948e6..e2d6676 100644
+--- a/controllers/goods.js
++++ b/controllers/goods.js
+@@ -3,11 +3,8 @@ const Client = require('../models/Client')
+ 
+ exports.createGood = async (req, res, next) => {
+     const data = req.body
+-    console.log(data)
+-
+     try {
+         const good = await Good.create({ ...data })
+-        console.log(good)
+         res.status(201).json({
+             success: true,
+             good
+-- 
+2.34.1.windows.1
+

@@ -3,15 +3,14 @@ import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Layout, Typography, Divider, Breadcrumb, Affix, Badge, Avatar } from 'antd'
 import {  ShoppingCartOutlined } from '@ant-design/icons'
-import { blue, cyan} from '@ant-design/colors'
+import { blue } from '@ant-design/colors'
 
-import { ShoppingCartProvider } from '../providers'
 import { useCurrentClient } from '../hooks'
 import PageSideBar from '../components/PageSideBar/PageSidebar'
 import CartDrawer from '../pages/Cart/CartDrawer'
 
 const withLayout = Component => ({ title = '', paths = [],  ...rest }) => {
-    const { cartItems } = useSelector(store => store.client)
+    const { cartItems = [] } = useSelector(store => store.client)
     const { isAuthenticated } = useCurrentClient()
 
     const [openDrawer, setOpenDrawer] = useState(false)

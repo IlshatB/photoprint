@@ -17,7 +17,8 @@ app.use(express.json())
 app.use('/static/public', express.static(__dirname + '/public'))
 app.use('/api/auth/', require('./routes/auth'))
 app.use('/api/goods/', require('./routes/goods'))
-
+app.use('/api/cart/', require('./routes/cart'))
+app.use('/api/orders/', require('./routes/orders'))
  
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'client', 'build')))

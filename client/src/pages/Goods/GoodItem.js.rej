@@ -1,0 +1,41 @@
+diff a/client/src/pages/Goods/GoodItem.js b/client/src/pages/Goods/GoodItem.js	(rejected hunks)
+@@ -4,12 +4,14 @@ import { Col, Card, Typography, Button, Skeleton } from 'antd'
+ 
+ import { getTimeByString } from '../../helpers'
+ 
+-import fallback from '../../assets/images/fallback.png'
+ import './goodItems.css'
+ 
+ const styles = {
+     card: { height: "100%", display: 'flex', flexDirection: 'column' },
+     block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
++    img: { objectFit: 'contain', height: '180px', zIndex: 2 },
++    imgBackground: { position: 'absolute', top: 0, width: '100%', height: '180px', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
++    backgroundContainer: { position: 'relative', backgroundColor: '#a6a6a6', display: 'flex', justifyContent: 'center' }
+ }
+ 
+ const GoodItem = ({ good, onAddItem }) => {
+@@ -23,11 +25,18 @@ const GoodItem = ({ good, onAddItem }) => {
+                 <Card
+                     hoverable
+                     cover={
+-                        <img
+-                            style={{ objectFit: 'contain' }}
+-                            alt={good?.name}
+-                            src={good?.images[0].url}
+-                        />
++                        <div style={styles.backgroundContainer}>
++                            <img
++                                style={styles.imgBackground}
++                                alt={good?.name}
++                                src={good?.images[0]?.url}
++                            />
++                            <img
++                                style={styles.img}
++                                alt={good?.name}
++                                src={good?.images[0]?.url}
++                            />
++                        </div>
+                     }
+                     style={styles.card} id="card-item"
+                 >

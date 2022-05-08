@@ -17,7 +17,7 @@ const AuthGuard = ({ children }) => {
         if (!id) {
             dispatch(loginClient(token))
         }
-    }, [])
+    }, [id, dispatch, token])
 
     return isAuthenticated ? children : <Auth.Authorize />
 }
