@@ -7,8 +7,10 @@ import { EditOutlined } from '@ant-design/icons'
 import { getTimeByString } from '../../helpers'
 import useCart from '../Cart/useCart'
 
+
 import fallback from '../../assets/images/fallback.png'
 import styles from './goodStyles'
+
 
 const Good = ({ good, loading = false }) => {
     const [form] = Form.useForm()
@@ -38,7 +40,7 @@ const Good = ({ good, loading = false }) => {
 
         const found = cartItems.find(i => i.good._id === good?._id && i.characteristics.every((el, id) => el.title === variables.characteristics[id].title && el.value === variables.characteristics[id].value))
 
-        if(!!found) {
+        if (!!found) {
             onAdd(found._id)
         }
         else {
@@ -57,7 +59,7 @@ const Good = ({ good, loading = false }) => {
                 name='good_view_form'
             >
                 <CardImages images={good?.images ?? []} loading={loading} />
-                <Tabs defaultActiveKey="description" onChange={() => {}} type="card">
+                <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
                     <Tabs.TabPane tab="Описание" key="description">
                         <Description description={good?.description ?? ''} loading={loading} />
                     </Tabs.TabPane>
@@ -68,7 +70,7 @@ const Good = ({ good, loading = false }) => {
                                 selectedSize={selectedSize}
                                 selectedType={selectedType}
                                 setSelectedSize={setSelectedSize}
-                                setSelectedType={setSelectedType} 
+                                setSelectedType={setSelectedType}
                             />
                         </Tabs.TabPane>
                     )}
@@ -108,12 +110,12 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
                     </div>
 
                     {good?.productionTime && (
-                            <Typography.Text style={{ fontSize: '0.9em' }} type="secondary">
-                                {`Время изготовления: ${getTimeByString(good?.productionTime)}`}
-                            </Typography.Text>
+                        <Typography.Text style={{ fontSize: '0.9em' }} type="secondary">
+                            {`Время изготовления: ${getTimeByString(good?.productionTime)}`}
+                        </Typography.Text>
                     )}
                 </div>
-            </div>   
+            </div>
         ) : (
             <div style={styles.skeleton}>
                 <Skeleton.Input active block size="small" style={{ width: '100%', marginBottom: 8 }} />
@@ -131,7 +133,7 @@ const CardImages = ({ images, loading }) => {
                 {images.map((image, id) => (
                     <div key={`image-${id + 1}`}>
                         <div style={styles.imageContent}>
-                            <Image height={300} alt={id} src={image} preview={false} />
+                            <Image height='100%' alt={id} src={image.url} preview={false} />
                         </div>
                     </div>
                 ))}
@@ -142,15 +144,15 @@ const CardImages = ({ images, loading }) => {
                     alt="fallback"
                     style={{ objectFit: 'contain' }}
                     src={fallback}
-                />                            
+                />
             </div>
         )
     ) : (
         <div style={styles.skeleton}>
             {Array.from(Array(7).keys()).map((_, id) => (
                 <Skeleton.Input key={`skeleton-${id}`} active block size="small" style={{ width: '100%' }} />
-            )) }
-        </div> 
+            ))}
+        </div>
     )
 }
 
@@ -168,12 +170,12 @@ const Description = ({ description, loading }) => {
     )
 }
 
-const Characteristics = ({ 
+const Characteristics = ({
     good,
     selectedSize,
     selectedType,
     setSelectedSize,
-    setSelectedType, 
+    setSelectedType,
 }) => {
     const sizes = useMemo(() => {
         return good?.sizes.filter(s => !!s !== false) ?? []

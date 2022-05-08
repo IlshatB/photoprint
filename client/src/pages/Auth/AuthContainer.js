@@ -20,6 +20,7 @@ const AuthContainer = () => {
     const handleLogin = async values => {
         try {
             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
+            setToken(data.token)
             dispatch(loginClient(data.token))
             setToken(data.token)
             
@@ -35,6 +36,7 @@ const AuthContainer = () => {
         try {
             if (password !== confirm) throw new Error('Пароли не совпадают')
             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
+            setToken(data.token)
             dispatch(loginClient(data.token))
             setToken(data.token)
 

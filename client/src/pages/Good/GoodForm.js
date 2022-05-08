@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip } from 'antd'
-import { ExclamationCircleOutlined, InfoCircleOutlined } from '@ant-design/icons'
+import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload } from 'antd'
+import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
-import { categories, categoriesList } from '../../helpers'
+
+import { categoriesList, storage, getNowDateString } from '../../helpers'
 
 const styles = {
     input: {
-        backgroundColor: '#f0f0f0', 
+        backgroundColor: '#f0f0f0',
         resize: 'none',
     },
     buttons: {
@@ -18,11 +19,13 @@ const styles = {
 }
 
 const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelete }) => {
+    const [fileArray, setFileArray] = useState(good?.images)
     const [form] = Form.useForm()
     const navigate = useNavigate()
     const { setFieldsValue } = form
 
     const initialValues = {
+        images: good?.images ?? [],
         category: good?.category ?? 'photobooks',
         name: good?.name ?? '',
         subDescription: good?.subDescription ?? '',
@@ -40,16 +43,42 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
 
     function handleDelete() {
         Modal.confirm({
-          title: `Вы точно хотите удалить следующую услугу?`,
-          icon: <ExclamationCircleOutlined />,
-          content: good?.name,
-          okText: 'Удалить',
-          okType: 'danger',
-          cancelText: 'Назад',
-          confirmLoading: deleteLoading,
-          onOk: handleDeleteConfirm,
+            title: `Вы точно хотите удалить следующую услугу?`,
+            icon: <ExclamationCircleOutlined />,
+            content: good?.name,
+            okText: 'Удалить',
+            okType: 'danger',
+            cancelText: 'Назад',
+            confirmLoading: deleteLoading,
+            onOk: handleDeleteConfirm,
         });
     }
+
+    const onChange = async ({
+        file, fileList }) => {
+        if (file.status === 'removed') {
+            let imageRef = await storage.refFromURL(file.url);
+            await imageRef.delete().then(() => {
+                setFileArray(fileList)
+            }).catch(err => console.log(err))
+        }
+        else {
+            const fileName = getNowDateString() + file.name
+            const snapshot = await storage
+                .ref("images/" + fileName)
+                .put(file)
+            const url = await snapshot.ref.getDownloadURL()
+            console.log(url)
+            const firebaseInfo = {
+                name: fileName,
+                url,
+                thumbUrl: url
+            }
+            fileList.pop()
+            fileList.push(firebaseInfo)
+            setFileArray(fileList)
+        }
+    };
 
     return (
         <Form
@@ -59,6 +88,17 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             onFinish={onFinish}
         >
             <Card title={<CardTitle name={good?.name ?? ''} form={form} />} bordered={false}>
+                <Typography.Title level={4}>Внешний вид:</Typography.Title>
+                <Form.Item name='imgInfo' >
+                    <Upload
+                        defaultFileList={fileArray ?? []}
+                        beforeUpload={() => false}
+                        listType="picture"
+                        onChange={onChange}
+                    >
+                        <Button icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                </Form.Item>
                 <Typography.Title level={4}>Краткое описание:</Typography.Title>
                 <Form.Item
                     name='subDescription'
@@ -71,7 +111,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                     <Input.TextArea rows={4} style={styles.input} bordered={false} placeholder='Краткое описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Описание:</Typography.Title>
-                <Form.Item name='description' rules={[{ required: true, message: 'Введите описание' } ]}>
+                <Form.Item name='description' rules={[{ required: true, message: 'Введите описание' }]}>
                     <Input.TextArea rows={10} style={styles.input} bordered={false} placeholder='Описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Характеристики:</Typography.Title>
@@ -103,7 +143,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
             setFieldsValue({ 'sizes-4': null })
 
         }
-        else if(variant === 'multi') {
+        else if (variant === 'multi') {
             setFieldsValue({ size: null })
         }
 
@@ -120,7 +160,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
             setFieldsValue({ 'types-4': null })
 
         }
-        else if(variant === 'multi') {
+        else if (variant === 'multi') {
             setFieldsValue({ type: null })
         }
 
@@ -143,10 +183,10 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций размера товара</Typography.Paragraph>
                         {Array.from(Array(sizesCounter).keys()).map((_, id) => (
-                                <Form.Item key={`sizes-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
-                                    <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
-                                </Form.Item>
-                            ))
+                            <Form.Item key={`sizes-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
+                                <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
+                            </Form.Item>
+                        ))
                         }
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button shape="round" disabled={sizesCounter === 5} onClick={() => setSizesCounter(v => v + 1)} >Добавить</Button>
@@ -169,12 +209,12 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций типа товара</Typography.Paragraph>
                         {Array.from(Array(typesCounter).keys()).map((_, id) => (
-                                <Form.Item key={`types-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
-                                    <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
-                                </Form.Item>
-                            ))
+                            <Form.Item key={`types-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
+                                <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
+                            </Form.Item>
+                        ))
                         }
-                        
+
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button shape="round" disabled={typesCounter === 5} onClick={() => setTypesCounter(v => v + 1)} >Добавить</Button>
                             <Button shape="round" disabled={typesCounter === 2} onClick={() => setTypesCounter(v => v - 1)} danger>Убрать</Button>
@@ -194,7 +234,7 @@ const CardTitle = ({ form }) => {
     return (
         <div>
             <Typography.Title level={4}>Категория:</Typography.Title>
-            <Form.Item name="category" rules={[{ required: true, message: 'Выберите категорию' } ]} >
+            <Form.Item name="category" rules={[{ required: true, message: 'Выберите категорию' }]} >
                 <Select value={values} onChange={value => setFieldsValue('category', value)}>
                     {categoriesList.map(cat => (
                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
@@ -204,23 +244,23 @@ const CardTitle = ({ form }) => {
                 </Select>
             </Form.Item>
             <Typography.Title level={4}>Название:</Typography.Title>
-            <Form.Item name="name" rules={[{ required: true, message: 'Введите название' } ]} style={{ marginTop: 16 }}>
+            <Form.Item name="name" rules={[{ required: true, message: 'Введите название' }]} style={{ marginTop: 16 }}>
                 <Input.TextArea rows={2} style={styles.input} bordered={false} placeholder='Название услуги/товара' />
             </Form.Item>
-            <Form.Item name="price" label="Цена:" rules={[{ required: true, message: 'Укажите цену' } ]} style={{ marginTop: 16 }}>
+            <Form.Item name="price" label="Цена:" rules={[{ required: true, message: 'Укажите цену' }]} style={{ marginTop: 16 }}>
                 <InputNumber min={1} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder='Цена' addonAfter=" руб." />
             </Form.Item>
             <Form.Item name="sale" label="Скидка" style={{ marginTop: 16 }}>
                 <InputNumber min={1} max={100} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder="Скидка в %" />
             </Form.Item>
             <Form.Item
-                name="productionTime" 
+                name="productionTime"
                 label={<TroductionTimeTooltip />}
                 style={{ marginTop: 16 }}
             >
                 <Input min={1} style={styles.input} bordered={false} placeholder="Время" />
             </Form.Item>
-        </div>  
+        </div>
     )
 }
 
@@ -236,7 +276,7 @@ const TroductionTimeTooltip = () => {
 
     return (
         <>
-            Время производства 
+            Время производства
             <Tooltip title={title}>
                 <InfoCircleOutlined style={{ marginLeft: 4 }} />
             </Tooltip>

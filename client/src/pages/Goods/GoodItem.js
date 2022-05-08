@@ -5,27 +5,45 @@ import { getTimeByString } from '../../helpers'
 
 import fallback from '../../assets/images/fallback.png'
 
+import './goods.css'
+
 const styles = {
     card: { height: "100%", display: 'flex', flexDirection: 'column' },
-    block: { display: 'flex', justifyContent:"space-between", marginTop: '16px' },
-    price: { color: '#1890ff' },
+    block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
+    img: { objectFit: 'contain', height: '180px', zIndex: 2 },
+    imgBackground: { position: 'absolute', top: 0, width: '100%', height: '180px', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
+    backgroundContainer: (noImage = false) => ({ 
+        position: 'relative', 
+        backgroundColor: '#a6a6a6', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        ...(noImage && { backgroundColor: '#F5F5F5' }) 
+    }),
+    price: { color: '#1890ff' }
 }
 
 const GoodItem = ({ good }) => {
     return (
         <Col sm={24} lg={12} xl={8}>
             <Link to={`/photobooks/${good?._id}`}>
-                <Card  
+                <Card
                     hoverable
                     cover={
-                        <div style={{ width: '100%', backgroundColor: '#F5F5F5' }} align="center">
+                        <div style={styles.backgroundContainer(!good?.images[0])}>
+                            {good?.images[0] && (
+                                <img
+                                style={styles.imgBackground}
+                                alt=""
+                                src={good?.images[0]?.url}
+                            />
+                            )}
                             <img
-                                style={{ objectFit: 'contain' }}
+                                style={styles.img}
                                 alt={good?.name}
-                                src={good?.image ?? fallback}
-                            />                            
+                                src={good?.images[0]?.url ?? fallback}
+                            />
                         </div>
-                    } 
+                    }
                     style={styles.card} id="card-item"
                 >
                     <div style={{ flexGrow: 1 }}>
@@ -41,7 +59,7 @@ const GoodItem = ({ good }) => {
                             </Typography.Text>
                         </div>
                     </div>
-                </Card>              
+                </Card>
             </Link>
         </Col>
     )
@@ -78,7 +96,7 @@ const Loading = () => {
 }
 
 GoodItem.Loading = Loading
-export default GoodItem 
+export default GoodItem
 
 const getPriceWithSale = (price, sale) => {
     return sale ? price * (100 - sale) / 100 : price

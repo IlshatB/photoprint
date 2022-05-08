@@ -33,7 +33,7 @@ const GoodFormContainer = ({ edit = false }) => {
     }, [edit, goodId])
 
     const handleCreate = async values => {
-        const variables = { ...values, category: categoriesList.find(c => c.value === values.category).value }
+        const variables = { ...values, category: categoriesList.find(c => c.value === values.category).value, images: values.imgInfo?.fileList }
 
         try {
             const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
@@ -49,29 +49,30 @@ const GoodFormContainer = ({ edit = false }) => {
     const handleSave = async values => {
         const { name, description, subDescription, category, productionTime, price, sale, size, type } = values
 
-        const sizes0 = values['sizes-0'] 
-        const sizes1 = values['sizes-1'] 
-        const sizes2 = values['sizes-2'] 
-        const sizes3 = values['sizes-3'] 
-        const sizes4 = values['sizes-4'] 
+        const sizes0 = values['sizes-0']
+        const sizes1 = values['sizes-1']
+        const sizes2 = values['sizes-2']
+        const sizes3 = values['sizes-3']
+        const sizes4 = values['sizes-4']
 
-        const types0 = values['types-0'] 
-        const types1 = values['types-1'] 
-        const types2 = values['types-2'] 
-        const types3 = values['types-3'] 
-        const types4 = values['types-4'] 
+        const types0 = values['types-0']
+        const types1 = values['types-1']
+        const types2 = values['types-2']
+        const types3 = values['types-3']
+        const types4 = values['types-4']
 
-        const variables = { 
+        const variables = {
             name,
             description,
             subDescription,
             category: categoriesList.find(c => c.value === category).value,
+            images: values.imgInfo?.fileList,
             productionTime,
             price,
             sale,
             ...(size && { size, sizes: [] }),
             ...(type && { type, types: [] }),
-            ...(sizes0 && { 
+            ...(sizes0 && {
                 sizes: [
                     sizes0,
                     sizes1,
@@ -81,7 +82,7 @@ const GoodFormContainer = ({ edit = false }) => {
                 ].filter(s => !!s !== false),
                 size: null,
             }),
-            ...(types0 && { 
+            ...(types0 && {
                 types: [
                     types0,
                     types1,
@@ -96,7 +97,6 @@ const GoodFormContainer = ({ edit = false }) => {
         try {
             const { data } = await axios.patch(`/api/goods/update/good/${goodId}`, variables, { headers: { "Content-Type": "application/json" } })
             const { good } = await data
-
             navigate(`/${good.category}/${good._id}`)
         } catch (err) {
             setError(err.response.data)
@@ -132,16 +132,16 @@ const GoodFormContainer = ({ edit = false }) => {
                 { value: getCategoryTitle(category), url: `/${category}` },
                 { value: name, url: `/${category}/${id}` },
                 { value: 'Редактирование', url: '' },
-            ] :[
+            ] : [
                 { value: 'Профиль', url: '/profile' },
                 { value: 'Создание', url: '' }
             ]),
         ]
-    }, [name, id, category, edit]) 
+    }, [name, id, category, edit])
 
     const GoodFormWithLayout = withLayout(GoodForm)
-    return error 
-        ? <NotFound title={error} /> 
+    return error
+        ? <NotFound title={error} />
         : (
             <GoodFormWithLayout
                 title={name}

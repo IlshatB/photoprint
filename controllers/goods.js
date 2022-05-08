@@ -3,22 +3,20 @@ const Client = require('../models/Client')
 
 exports.createGood = async (req, res, next) => {
     const data = req.body
-
     try {
         const good = await Good.create({ ...data })
-
         res.status(201).json({
-            success: true, 
+            success: true,
             good
         })
-    } catch(e){
+    } catch (e) {
         next(e)
     }
 }
 
 exports.deleteGood = async (req, res, next) => {
-    const id  = req.params.id
-    try {   
+    const id = req.params.id
+    try {
         const good = await Good.findById(id)
         good.available = false
         await good.save()
@@ -73,16 +71,16 @@ exports.fetchGoods = async (req, res, next) => {
 
     try {
         const goods = await Good.find({ category, available: true }).sort({ 'date': -1 }).limit(limit)
-        
+
         if (!goods.length) {
             return res.status(204).json({ success: true, goods })
-        } 
-        
+        }
+
         res.status(200).json({
-            success: true, 
+            success: true,
             goods
         })
-    } catch(e) {    
+    } catch (e) {
         next(e)
     }
 }

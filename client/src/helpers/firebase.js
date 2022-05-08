@@ -7,7 +7,7 @@ const firebaseConfig = {
     projectId: "photoprint-db532",
     storageBucket: "photoprint-db532.appspot.com",
     messagingSenderId: "937877443867",
-    appId: "1:937877443867:web:b49b11b7393a94fe9c2fbe",
+    appId: "1:937877443867:web:b49b11b7393a94fe9c2fbe",     
     measurementId: "G-6Z48ER252Q"
 };
 

@@ -38,4 +38,4 @@ const GoodSchema = new mongoose.Schema({
     },
 })
 
-module.exports =  mongoose.model('Good', GoodSchema)
+module.exports = mongoose.model('Good', GoodSchema)
