@@ -3,8 +3,6 @@ import { Col, Card, Typography, Skeleton } from 'antd'
 
 import { getTimeByString } from '../../helpers'
 
-import './goodItems.css'
-
 const styles = {
     card: { height: "100%", display: 'flex', flexDirection: 'column' },
     block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
