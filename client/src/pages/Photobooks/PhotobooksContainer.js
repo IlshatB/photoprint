@@ -23,7 +23,6 @@ const PhotobooksContainer = () => {
             try {
                 const { data } = await axios.get(`/api/goods/fetch/goods/photobooks&${limit}`, { headers: { "Content-Type": "application/json" } })
                 setGoods(data.goods)
-                console.log(data.goods)
                 setTimeout(() => {
                     setLoading(false)
                     setMoreLoading(false)
