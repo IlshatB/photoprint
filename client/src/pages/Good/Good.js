@@ -133,7 +133,7 @@ const CardImages = ({ images, loading }) => {
                 {images.map((image, id) => (
                     <div key={`image-${id + 1}`}>
                         <div style={styles.imageContent}>
-                            <Image height={300} alt={id} src={image} preview={false} />
+                            <Image height='100%' alt={id} src={image.url} preview={false} />
                         </div>
                     </div>
                 ))}
