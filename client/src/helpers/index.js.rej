@@ -1,7 +1,0 @@
-diff a/client/src/helpers/index.js b/client/src/helpers/index.js	(rejected hunks)
-@@ -1,4 +1,5 @@
- export * from './time'
- export * from './category'
-+export * from './firebase'
- 
- export * from './mocks'

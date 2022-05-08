@@ -3,14 +3,22 @@ import { Col, Card, Typography, Skeleton } from 'antd'
 
 import { getTimeByString } from '../../helpers'
 
-import './goodItems.css'
+import fallback from '../../assets/images/fallback.png'
+
+import './goods.css'
 
 const styles = {
     card: { height: "100%", display: 'flex', flexDirection: 'column' },
     block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
     img: { objectFit: 'contain', height: '180px', zIndex: 2 },
     imgBackground: { position: 'absolute', top: 0, width: '100%', height: '180px', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
-    backgroundContainer: { position: 'relative', backgroundColor: '#a6a6a6', display: 'flex', justifyContent: 'center' },
+    backgroundContainer: (noImage = false) => ({ 
+        position: 'relative', 
+        backgroundColor: '#a6a6a6', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        ...(noImage && { backgroundColor: '#F5F5F5' }) 
+    }),
     price: { color: '#1890ff' }
 }
 
@@ -21,16 +29,18 @@ const GoodItem = ({ good }) => {
                 <Card
                     hoverable
                     cover={
-                        <div style={styles.backgroundContainer}>
-                            <img
+                        <div style={styles.backgroundContainer(!good?.images[0])}>
+                            {good?.images[0] && (
+                                <img
                                 style={styles.imgBackground}
-                                alt={good?.name}
+                                alt=""
                                 src={good?.images[0]?.url}
                             />
+                            )}
                             <img
                                 style={styles.img}
                                 alt={good?.name}
-                                src={good?.images[0]?.url}
+                                src={good?.images[0]?.url ?? fallback}
                             />
                         </div>
                     }

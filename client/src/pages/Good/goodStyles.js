@@ -12,9 +12,8 @@ const styles = {
         flexDirection: 'column',   
     },
     imageContent: {
-        height: '160px',
+        height: '300px',
         color: '#fff',
-        lineHeight: '160px',
         textAlign: 'center',
         background: '#364d79',
     },

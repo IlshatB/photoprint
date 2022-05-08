@@ -4,7 +4,7 @@ import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radi
 import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
 
-import { categories, categoriesList, storage, getNowDateString } from '../../helpers'
+import { categoriesList, storage, getNowDateString } from '../../helpers'
 
 const styles = {
     input: {
@@ -25,6 +25,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
     const { setFieldsValue } = form
 
     const initialValues = {
+        images: good?.images ?? [],
         category: good?.category ?? 'photobooks',
         name: good?.name ?? '',
         subDescription: good?.subDescription ?? '',
@@ -86,7 +87,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             initialValues={initialValues}
             onFinish={onFinish}
         >
-            <Card title={<CardTitle name={fileArray ?? ''} />} bordered={false}>
+            <Card title={<CardTitle name={good?.name ?? ''} form={form} />} bordered={false}>
                 <Typography.Title level={4}>Внешний вид:</Typography.Title>
                 <Form.Item name='imgInfo' >
                     <Upload
