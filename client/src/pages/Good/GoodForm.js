@@ -1,27 +1,42 @@
 import { useState } from 'react'
 import { useNavigate } from "react-router-dom"
-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Upload } from 'antd'
-import { ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
+import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload } from 'antd'
+import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
 
 import { categories, categoriesList, storage, getNowDateString } from '../../helpers'
+
+const styles = {
+    input: {
+        backgroundColor: '#f0f0f0',
+        resize: 'none',
+    },
+    buttons: {
+        display: 'flex',
+        width: '100%',
+        justifyContent: 'space-between',
+    },
+}
 
 const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelete }) => {
     const [fileArray, setFileArray] = useState(good?.images)
     const [form] = Form.useForm()
     const navigate = useNavigate()
+    const { setFieldsValue } = form
 
     const initialValues = {
-        category: categories[good?.category] ?? categoriesList[0],
+        category: good?.category ?? 'photobooks',
         name: good?.name ?? '',
         subDescription: good?.subDescription ?? '',
         description: good?.description ?? '',
         price: good?.price,
+        sale: good?.sale,
+        productionTime: good?.productionTime,
     }
 
     const handleDeleteConfirm = () => {
         onDelete().then(() => {
-            navigate(`/${good.category}`)
+            navigate(good?.category ? `/${good?.category}` : -1)
         })
     }
 
@@ -67,7 +82,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
     return (
         <Form
             form={form}
-            name='good_form'
+            name='good_edit_form'
             initialValues={initialValues}
             onFinish={onFinish}
         >
@@ -99,8 +114,9 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                     <Input.TextArea rows={10} style={styles.input} bordered={false} placeholder='Описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Характеристики:</Typography.Title>
+                <Characteristics good={good} setFieldsValue={setFieldsValue} />
 
-                <div style={styles.buttons(edit)}>
+                <div style={styles.buttons}>
                     <Button type="primary" htmlType='submit'>{edit ? 'Сохранить' : 'Создать'}</Button>
                     <Button type="primary" danger onClick={handleDelete} >Удалить</Button>
                 </div>
@@ -109,12 +125,116 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
     )
 }
 
-const CardTitle = () => {
+const Characteristics = ({ good, setFieldsValue }) => {
+    const [sizeVariant, setSizeVariant] = useState(good?.size ? 'single' : !!good?.sizes.length ? 'multi' : null)
+    const [typeVariant, setTypeVariant] = useState(good?.type ? 'single' : !!good?.types.length ? 'multi' : null)
+
+    const [sizesCounter, setSizesCounter] = useState(good?.sizes.length ?? 2)
+    const [typesCounter, setTypesCounter] = useState(good?.types.length ?? 2)
+
+    const handleChangeSizeVariant = e => {
+        const variant = e.target.value
+        if (variant === 'single') {
+            setFieldsValue({ 'sizes-0': null })
+            setFieldsValue({ 'sizes-1': null })
+            setFieldsValue({ 'sizes-2': null })
+            setFieldsValue({ 'sizes-3': null })
+            setFieldsValue({ 'sizes-4': null })
+
+        }
+        else if (variant === 'multi') {
+            setFieldsValue({ size: null })
+        }
+
+        setSizeVariant(e.target.value)
+    }
+
+    const handleChangeTypeVariant = e => {
+        const variant = e.target.value
+        if (variant === 'single') {
+            setFieldsValue({ 'types-0': null })
+            setFieldsValue({ 'types-1': null })
+            setFieldsValue({ 'types-2': null })
+            setFieldsValue({ 'types-3': null })
+            setFieldsValue({ 'types-4': null })
+
+        }
+        else if (variant === 'multi') {
+            setFieldsValue({ type: null })
+        }
+
+        setTypeVariant(e.target.value)
+    }
+
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ marginBottom: 16 }}>
+                <Typography.Title level={5}>Размер товара/услуги</Typography.Title>
+                <Radio.Group onChange={handleChangeSizeVariant} value={sizeVariant}>
+                    <Radio value="single">Один размер</Radio>
+                    <Radio value="multi">Несколько размеров</Radio>
+                </Radio.Group>
+                {sizeVariant === 'single' ? (
+                    <Form.Item name='size' style={{ marginTop: 16 }} initialValue={good?.size} shouldUpdate>
+                        <Input style={styles.input} bordered={false} placeholder='Размер товара' />
+                    </Form.Item>
+                ) : sizeVariant === 'multi' ? (
+                    <>
+                        <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций размера товара</Typography.Paragraph>
+                        {Array.from(Array(sizesCounter).keys()).map((_, id) => (
+                            <Form.Item key={`sizes-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
+                                <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
+                            </Form.Item>
+                        ))
+                        }
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Button shape="round" disabled={sizesCounter === 5} onClick={() => setSizesCounter(v => v + 1)} >Добавить</Button>
+                            <Button shape="round" disabled={sizesCounter === 2} onClick={() => setSizesCounter(v => v - 1)} danger>Убрать</Button>
+                        </div>
+                    </>
+                ) : null}
+            </div>
+            <div style={{ marginBottom: 16 }}>
+                <Typography.Title level={5}>Тип товара/услуги</Typography.Title>
+                <Radio.Group onChange={handleChangeTypeVariant} value={typeVariant}>
+                    <Radio value="single">Один тип</Radio>
+                    <Radio value="multi">Несколько типов</Radio>
+                </Radio.Group>
+                {typeVariant === 'single' ? (
+                    <Form.Item name='type' style={{ marginTop: 16 }} initialValue={good?.type} shouldUpdate>
+                        <Input style={styles.input} bordered={false} placeholder='Тип товара' />
+                    </Form.Item>
+                ) : typeVariant === 'multi' ? (
+                    <>
+                        <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций типа товара</Typography.Paragraph>
+                        {Array.from(Array(typesCounter).keys()).map((_, id) => (
+                            <Form.Item key={`types-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
+                                <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
+                            </Form.Item>
+                        ))
+                        }
+
+                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <Button shape="round" disabled={typesCounter === 5} onClick={() => setTypesCounter(v => v + 1)} >Добавить</Button>
+                            <Button shape="round" disabled={typesCounter === 2} onClick={() => setTypesCounter(v => v - 1)} danger>Убрать</Button>
+                        </div>
+                    </>
+                ) : null}
+            </div>
+
+        </div>
+    )
+}
+
+const CardTitle = ({ form }) => {
+    const { getFieldsValue, setFieldsValue } = form
+    const values = getFieldsValue()
+
     return (
         <div>
             <Typography.Title level={4}>Категория:</Typography.Title>
-            <Form.Item name='category' rules={[{ required: true, message: 'Выберите категорию' }]} >
-                <Select>
+            <Form.Item name="category" rules={[{ required: true, message: 'Выберите категорию' }]} >
+                <Select value={values} onChange={value => setFieldsValue('category', value)}>
                     {categoriesList.map(cat => (
                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
                             {cat.title}
@@ -123,46 +243,44 @@ const CardTitle = () => {
                 </Select>
             </Form.Item>
             <Typography.Title level={4}>Название:</Typography.Title>
-            <Form.Item name='name' rules={[{ required: true, message: 'Введите название' }]} style={{ marginTop: 16 }}>
+            <Form.Item name="name" rules={[{ required: true, message: 'Введите название' }]} style={{ marginTop: 16 }}>
                 <Input.TextArea rows={2} style={styles.input} bordered={false} placeholder='Название услуги/товара' />
             </Form.Item>
-            <Form.Item label="Цена:" name='price' rules={[{ required: true, message: 'Укажите цену' }]} style={{ marginTop: 16 }}>
-                <InputNumber min={1} style={styles.input} bordered={false} placeholder='Цена' addonAfter=" руб." />
+            <Form.Item name="price" label="Цена:" rules={[{ required: true, message: 'Укажите цену' }]} style={{ marginTop: 16 }}>
+                <InputNumber min={1} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder='Цена' addonAfter=" руб." />
+            </Form.Item>
+            <Form.Item name="sale" label="Скидка" style={{ marginTop: 16 }}>
+                <InputNumber min={1} max={100} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder="Скидка в %" />
+            </Form.Item>
+            <Form.Item
+                name="productionTime"
+                label={<TroductionTimeTooltip />}
+                style={{ marginTop: 16 }}
+            >
+                <Input min={1} style={styles.input} bordered={false} placeholder="Время" />
             </Form.Item>
         </div>
     )
 }
 
-const Dialog = ({
-    title,
-    visible,
-    onOk,
-    confirmLoading,
-    onCancel,
-}) => {
+const TroductionTimeTooltip = () => {
+    const title = (<>
+        Вводите время в формате: <br />
+        Числовое_значениеТип_тайминга <br />
+        m - минуты <br />
+        h - часы <br />
+        d - дни <br />
+        Пример: 2h - 2 часа
+    </>)
+
     return (
-        <Modal
-            title={title}
-            visible={visible}
-            onOk={onOk}
-            confirmLoading={confirmLoading}
-            onCancel={onCancel}
-        >
-            <p>modalText</p>
-        </Modal>
+        <>
+            Время производства
+            <Tooltip title={title}>
+                <InfoCircleOutlined style={{ marginLeft: 4 }} />
+            </Tooltip>
+        </>
     )
 }
 
 export default GoodForm
-
-const styles = {
-    input: {
-        backgroundColor: '#f0f0f0',
-        resize: 'none',
-    },
-    buttons: edit => ({
-        display: 'flex',
-        width: '100%',
-        justifyContent: 'space-between',
-    }),
-}

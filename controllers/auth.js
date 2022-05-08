@@ -125,7 +125,13 @@ exports.fetch = async (req, res, next) => {
     try {
         const client = await Client.findById(id).populate({
             path: 'cart.good',
-            select: 'name subDescription price',
+            select: 'name subDescription price sale',
+        }).populate({
+            path: 'orders',
+            select: 'date status cost items',
+            populate: [
+                { path: 'items.good', select: 'name subDescription price sale' },
+            ],
         })
 
         res.status(200).json({
@@ -135,6 +141,7 @@ exports.fetch = async (req, res, next) => {
                 email: client.email, 
                 isAdmin: !!(id === keys.ADMIN_ID),
                 cartItems: client.cart,
+                orders: client.orders,
             }
         })
     } catch(e) {

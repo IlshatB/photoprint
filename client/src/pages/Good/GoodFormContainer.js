@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { getCategoryTitle } from '../../helpers'
+import { getCategoryTitle, categoriesList } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import GoodForm from './GoodForm'
@@ -30,26 +30,70 @@ const GoodFormContainer = ({ edit = false }) => {
         }
 
         if (edit) fetchData()
-    }, [])
+    }, [edit, goodId])
 
     const handleCreate = async values => {
+        const variables = { ...values, category: categoriesList.find(c => c.value === values.category).value, images: values.imgInfo?.fileList }
+
         try {
-            const variables = { ...values, category: values.category.value, images: values.imgInfo?.fileList }
-            try {
-                const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
-                const { good } = await data
-                navigate(`/${good.category}/${good._id}`)
-            } catch (err) {
-                setError(err.response.data)
-            }
-        }
-        catch (err) {
+            const { data } = await axios.post('/api/goods/create', variables, { headers: { "Content-Type": "application/json" } })
+            const { good } = await data
+
+            navigate(`/${good.category}/${good._id}`)
+        } catch (err) {
+            console.log(err)
             setError(err.response.data)
         }
     }
 
     const handleSave = async values => {
-        const variables = { ...values, category: values.category.value, images: values.imgInfo?.fileList }
+        const { name, description, subDescription, category, productionTime, price, sale, size, type } = values
+
+        const sizes0 = values['sizes-0']
+        const sizes1 = values['sizes-1']
+        const sizes2 = values['sizes-2']
+        const sizes3 = values['sizes-3']
+        const sizes4 = values['sizes-4']
+
+        const types0 = values['types-0']
+        const types1 = values['types-1']
+        const types2 = values['types-2']
+        const types3 = values['types-3']
+        const types4 = values['types-4']
+
+        const variables = {
+            name,
+            description,
+            subDescription,
+            category: categoriesList.find(c => c.value === category).value,
+            images: values.imgInfo?.fileList,
+            productionTime,
+            price,
+            sale,
+            ...(size && { size, sizes: [] }),
+            ...(type && { type, types: [] }),
+            ...(sizes0 && {
+                sizes: [
+                    sizes0,
+                    sizes1,
+                    sizes2,
+                    sizes3,
+                    sizes4,
+                ].filter(s => !!s !== false),
+                size: null,
+            }),
+            ...(types0 && {
+                types: [
+                    types0,
+                    types1,
+                    types2,
+                    types3,
+                    types4,
+                ].filter(s => !!s !== false),
+                type: null,
+            }),
+        }
+
         try {
             const { data } = await axios.patch(`/api/goods/update/good/${goodId}`, variables, { headers: { "Content-Type": "application/json" } })
             const { good } = await data
@@ -62,7 +106,7 @@ const GoodFormContainer = ({ edit = false }) => {
     const handleDelete = async () => {
         setDeleteLoading(true)
         try {
-            const { data } = await axios.delete(`/api/goods/delete/good/${goodId}`, { headers: { "Content-Type": "application/json" } })
+            const { data } = await axios.patch(`/api/goods/delete/good/${goodId}`, { headers: { "Content-Type": "application/json" } })
             const { success } = data
             setTimeout(() => {
                 setDeleteLoading(false)
@@ -93,7 +137,7 @@ const GoodFormContainer = ({ edit = false }) => {
                 { value: 'Создание', url: '' }
             ]),
         ]
-    }, [name, id, category])
+    }, [name, id, category, edit])
 
     const GoodFormWithLayout = withLayout(GoodForm)
     return error

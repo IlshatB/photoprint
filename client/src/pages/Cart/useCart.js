@@ -1,36 +1,52 @@
-import { useCallback } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 
-import { updateCart } from '../../store/client/actions'
+import { fetchCart } from '../../store/client/actions'
+import { useCurrentClient } from '../../hooks'
 
 const useCart = () => {
-    const dispatch = useDispatch()
+    const dispatch = useDispatch()    
+    const { token } = useCurrentClient()
 
-    const handleRemoveItem = useCallback((item, cartItems) => {
-        const items = cartItems.map(i => i._id === item._id ? ({ ...item, amount: i.amount - 1 }) : i).filter(i => i.amount > 0)
-        dispatch(updateCart(items))
-    }, [dispatch])
+    const config = useMemo(() => ({
+        headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    }), [token])
 
-    const handleAddItem = useCallback((item, cartItems) => {
-        const isFound = cartItems.find(i => i._id === item._id)
-        const items = isFound ? cartItems.map(i => i._id === item._id ? ({ ...item, amount: i.amount + 1}) : i) : [ ...cartItems, { ...item, amount: 1 }]
-        dispatch(updateCart(items))
-    }, [dispatch])
-    
-    const handleSaveCart = useCallback(async (cartItems, clientId) => {
+    const handleInsert = useCallback(async ({ good, characteristics = [] }) => {
         try {
-            const items = cartItems.map(i => ({ good: i._id, amount: i.amount }))
-            await axios.patch(`/api/goods/save/cart/${clientId}`, { items }, { headers: { "Content-Type": "application/json" } })
+            await axios.put(`/api/cart/item/insert`, { good, characteristics }, config)
+            dispatch(fetchCart(token))
         } catch(e) {
             console.log(e)
         }
-    }, [dispatch])
+    }, [token, dispatch, config])
+
+    const handleAdd = useCallback(async id => {
+        try {
+            await axios.patch(`/api/cart/item/add/${id}`, {}, config)
+            dispatch(fetchCart(token))
+        } catch(e) {
+            console.log(e)
+        }
+    }, [token, dispatch, config])
+
+    const handleRemove = useCallback(async id => {
+        try {
+            await axios.patch(`/api/cart/item/remove/${id}`, {}, config)
+            dispatch(fetchCart(token))
+        } catch(e) {
+            console.log(e)
+        }
+    }, [token, dispatch, config])
 
     return {
-        onAdd: handleAddItem,
-        onRemove: handleRemoveItem,
-        onSave: handleSaveCart,
+        onInsert: handleInsert,
+        onAdd: handleAdd,
+        onRemove: handleRemove,
     }
 }
 

@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
+
 import { Tabs, Typography, Button, Form, Input, Result, Spin } from 'antd'
 import { LockOutlined } from '@ant-design/icons'
 
-import Admin from '../Admin/AdminContainer'
+import Orders from './components/Orders'
+import Admin from './components/Admin'
 
 const Profile = () => {
-    const { id, email, isAdmin } = useSelector(store => store.client)
+    const client = useSelector(store => store.client)
+    const { id, email, isAdmin } = client
+
     const [resetToken, setResetToken] = useState()
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
@@ -89,10 +93,10 @@ const Profile = () => {
                 <Tabs defaultActiveKey="account" onChange={() => {}}>
                     <Tabs.TabPane tab="Учетная запись" key="account">
                         <Typography.Paragraph>{`Ваша эл.почта: ${email}`}</Typography.Paragraph>
-                            <Button type="link" onClick={handleGetToken}>Сменить пароль</Button>
+                        <Button type="primary" onClick={handleGetToken}>Сменить пароль</Button>
                     </Tabs.TabPane>
                     <Tabs.TabPane tab="Заказы" key="orders">
-                        Заказы
+                        <Orders client={client} />
                     </Tabs.TabPane>
                     {isAdmin && (
                         <Tabs.TabPane tab="Администратор" key="admin">

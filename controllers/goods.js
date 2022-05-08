@@ -15,10 +15,11 @@ exports.createGood = async (req, res, next) => {
 }
 
 exports.deleteGood = async (req, res, next) => {
-    const _id = req.params.id
+    const id = req.params.id
     try {
-        await Good.deleteOne({ _id })
-
+        const good = await Good.findById(id)
+        good.available = false
+        await good.save()
         res.status(200).json({
             success: true
         })
@@ -30,6 +31,7 @@ exports.deleteGood = async (req, res, next) => {
 exports.updateGood = async (req, res, next) => {
     const { id } = req.params
     const data = req.body
+
     try {
         const good = await Good.findById(id)
         for (const [key, value] of Object.entries(data)) {
@@ -68,7 +70,7 @@ exports.fetchGoods = async (req, res, next) => {
     const { category, limit = 6 } = req.params
 
     try {
-        const goods = await Good.find({ category }).sort({ 'date': -1 }).limit(limit)
+        const goods = await Good.find({ category, available: true }).sort({ 'date': -1 }).limit(limit)
 
         if (!goods.length) {
             return res.status(204).json({ success: true, goods })

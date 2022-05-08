@@ -1,0 +1,63 @@
+diff a/client/src/pages/Good/GoodForm.js b/client/src/pages/Good/GoodForm.js	(rejected hunks)
+@@ -4,9 +4,10 @@ import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Uplo
+ import { ExclamationCircleOutlined, UploadOutlined } from '@ant-design/icons'
+ 
+ 
+-import { categories, categoriesList } from '../../helpers'
++import { categories, categoriesList, storage, getNowDateString } from '../../helpers'
+ 
+ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelete }) => {
++    const [fileArray, setFileArray] = useState(good?.images)
+     const [form] = Form.useForm()
+     const navigate = useNavigate()
+ 
+@@ -36,9 +37,31 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+             onOk: handleDeleteConfirm,
+         });
+     }
+-    const [fileList, setFileList] = useState(good?.images)
+-    const onChange = ({ fileList: newFileList }) => {
+-        setFileList(newFileList)
++
++    const onChange = async ({
++        file, fileList }) => {
++        if (file.status === 'removed') {
++            let imageRef = await storage.refFromURL(file.url);
++            await imageRef.delete().then(() => {
++                setFileArray(fileList)
++            }).catch(err => console.log(err))
++        }
++        else {
++            const fileName = getNowDateString() + file.name
++            const snapshot = await storage
++                .ref("images/" + fileName)
++                .put(file)
++            const url = await snapshot.ref.getDownloadURL()
++            console.log(url)
++            const firebaseInfo = {
++                name: fileName,
++                url,
++                thumbUrl: url
++            }
++            fileList.pop()
++            fileList.push(firebaseInfo)
++            setFileArray(fileList)
++        }
+     };
+ 
+     return (
+@@ -48,11 +71,12 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
+             initialValues={initialValues}
+             onFinish={onFinish}
+         >
+-            <Card title={<CardTitle name={fileList ?? ''} />} bordered={false}>
++            <Card title={<CardTitle name={fileArray ?? ''} />} bordered={false}>
+                 <Typography.Title level={4}>╨Т╨╜╨╡╤И╨╜╨╕╨╣ ╨▓╨╕╨┤:</Typography.Title>
+                 <Form.Item name='imgInfo' >
+                     <Upload
+-                        defaultFileList={good?.images ?? []}
++                        defaultFileList={fileArray ?? []}
++                        beforeUpload={() => false}
+                         listType="picture"
+                         onChange={onChange}
+                     >

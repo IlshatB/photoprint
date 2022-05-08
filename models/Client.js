@@ -4,6 +4,8 @@ const bcrypct = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
 
+require('./Order')
+
 const ClientSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -20,16 +22,15 @@ const ClientSchema = new mongoose.Schema({
         minlength: 6,
         select: false
     },
-    cart: [
-        { 
-            amount: Number,
-            characteristics: [{
-                title: String,
-                value: String,
-            }],
-            good: {type: mongoose.Schema.Types.ObjectId, ref: "Good"}
-        }
-    ],
+    cart: [{ 
+        amount: Number,
+        characteristics: [{
+            title: String,
+            value: String,
+        }],
+        good: { type: mongoose.Schema.Types.ObjectId, ref: "Good" }
+    }],
+    orders: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
     resetPasswordToken: String,
     resetPasswordExpire: Date
 });
@@ -37,24 +38,24 @@ const ClientSchema = new mongoose.Schema({
 
 ClientSchema.pre("save", async function(next) {
     if(!this.isModified("password")) {
-        next();
+        next()
     }
-    const salt = await bcrypct.genSalt(10);
-    this.password = await bcrypct.hash(this.password, salt);
-    next();
+    const salt = await bcrypct.genSalt(10)
+    this.password = await bcrypct.hash(this.password, salt)
+    next()
     }
-);
+)
 ClientSchema.methods.matchPassword = async function(password) {
-    return await bcrypct.compare(password, this.password);
+    return await bcrypct.compare(password, this.password)
 }
 ClientSchema.methods.getSignedToken = function() {
-    return jwt.sign({ id: this._id, email: this.email }, keys.JWT_SECRET, { expiresIn: keys.JWT_EXPIRE } );
+    return jwt.sign({ id: this._id, email: this.email, isAdmin: !!(this._id.toString() === keys.ADMIN_ID) }, keys.JWT_SECRET, { expiresIn: keys.JWT_EXPIRE } )
 }
 ClientSchema.methods.getResetPasswordToken = function() {
-    const resetToken = crypto.randomBytes(20).toString('hex');
-    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    const resetToken = crypto.randomBytes(20).toString('hex')
+    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
 
-    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
-    return resetToken; 
+    this.resetPasswordExpire = Date.now() + 10 * 60 * 1000
+    return resetToken 
 }
-module.exports = mongoose.model('Client', ClientSchema);
+module.exports = mongoose.model('Client', ClientSchema)

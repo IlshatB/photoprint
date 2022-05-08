@@ -8,10 +8,14 @@ import Profile from '../Profile/ProfileContainer'
 import Good from '../Good/GoodContainer'
 import GoodForm from '../Good/GoodFormContainer'
 
-import Photobooks from '../Photobooks/PhotobooksContainer'
+import Photobooks from '../Categories/Photobooks'
+import Photos from '../Categories/Photos'
+import Print from '../Categories/Print'
+import Souvenirs from '../Categories/Souvenirs'
+import Calendars from '../Categories/Calendars'
+
 
 /** вспомогательные компоненты */
-import NotImplemented from '../NotImplemented/NotImplemented'
 import NotFound from '../../components/NotFound/NotFound'
 import AuthGuard from '../../components/AuthGuard/AuthGuard'
 import AdminGuard from '../../components/AdminGuard/AdminGuard'
@@ -42,19 +46,131 @@ const routes =  [
         ),
     },
     {
-        path: '/goods/new',
-        element: (
-            <AdminGuard>
-                <GoodForm />
-            </AdminGuard>
-        ),
-    },
-    {
         path: '/photobooks',
         children: [
             {
                 path: '',
                 element: <Photobooks />,
+            },
+            {
+                path: ':goodId',
+                children: [
+                    {
+                        path: '',
+                        element: (
+                            <>
+                                <Good />
+                            </>
+                        ),
+                    },
+                    {
+                        path: 'edit',
+                        element: (
+                            <AdminGuard>
+                                <GoodForm edit />
+                            </AdminGuard>
+                        ),
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        path: '/photos',
+        children: [
+            {
+                path: '',
+                element: <Photos />,
+            },
+            {
+                path: ':goodId',
+                children: [
+                    {
+                        path: '',
+                        element: (
+                            <>
+                                <Good />
+                            </>
+                        ),
+                    },
+                    {
+                        path: 'edit',
+                        element: (
+                            <AdminGuard>
+                                <GoodForm edit />
+                            </AdminGuard>
+                        ),
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        path: '/print',
+        children: [
+            {
+                path: '',
+                element: <Print />,
+            },
+            {
+                path: ':goodId',
+                children: [
+                    {
+                        path: '',
+                        element: (
+                            <>
+                                <Good />
+                            </>
+                        ),
+                    },
+                    {
+                        path: 'edit',
+                        element: (
+                            <AdminGuard>
+                                <GoodForm edit />
+                            </AdminGuard>
+                        ),
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        path: '/souvenirs',
+        children: [
+            {
+                path: '',
+                element: <Souvenirs />,
+            },
+            {
+                path: ':goodId',
+                children: [
+                    {
+                        path: '',
+                        element: (
+                            <>
+                                <Good />
+                            </>
+                        ),
+                    },
+                    {
+                        path: 'edit',
+                        element: (
+                            <AdminGuard>
+                                <GoodForm edit />
+                            </AdminGuard>
+                        ),
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        path: '/calendars',
+        children: [
+            {
+                path: '',
+                element: <Calendars />,
             },
             {
                 path: ':goodId',
@@ -101,6 +217,14 @@ const routes =  [
                         <Profile />
                     </AuthGuard>
                 ),
+            },
+            {
+                path: 'new',
+                element: (
+                    <AdminGuard>
+                        <GoodForm />
+                    </AdminGuard>
+                )
             },
         ],
     },

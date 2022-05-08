@@ -22,6 +22,7 @@ const AuthContainer = () => {
             const { data } = await axios.post('/api/auth/signin', values, { headers: { "Content-Type": "application/json" } })
             setToken(data.token)
             dispatch(loginClient(data.token))
+            setToken(data.token)
             
             navigate('/home')
         } catch (e) {
@@ -37,6 +38,7 @@ const AuthContainer = () => {
             const { data } = await axios.post('/api/auth/signup', values, { headers: { "Content-Type": "application/json" } })
             setToken(data.token)
             dispatch(loginClient(data.token))
+            setToken(data.token)
 
             navigate('/home')
         } catch (e) {

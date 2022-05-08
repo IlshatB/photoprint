@@ -21,12 +21,21 @@ const GoodSchema = new mongoose.Schema({
         type: Number,
         required: [true, "Укажите цену"],
     },
-    images: [Object],
+    images: [{
+        name: String,
+        url: String,
+        thumbUrl: String,
+    }],
     productionTime: String,
     size: String,
     sizes: [String],
     type: String,
+    types: [String],
     sale: Number,
+    available: {
+        type: Boolean,
+        default: true,
+    },
 })
 
-module.exports =  mongoose.model('Good', GoodSchema)
+module.exports = mongoose.model('Good', GoodSchema)

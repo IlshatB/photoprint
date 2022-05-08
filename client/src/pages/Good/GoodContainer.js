@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { getCategoryTitle } from '../../helpers'
+import { getCategoryTitle, categories } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import Good from './Good'
@@ -31,8 +31,8 @@ const GoodContainer = () => {
     }, [goodId])
 
     const category = location.pathname.split('/')[1]
-    const categoryTitle = getCategoryTitle(category)
-    const goodName = useMemo(() => good?.name ?? 'loading', [good, good?.name])
+    const categoryTitle = categories[category]
+    const goodName = useMemo(() => good?.name ?? 'loading', [good])
 
     const paths = useMemo(() => {
         return [
@@ -40,7 +40,7 @@ const GoodContainer = () => {
             { value: categoryTitle, url: `/${category}` },
             { value: goodName, url: '' },
         ]
-    }, [category, categoryTitle, good, good?.name]) 
+    }, [category, categoryTitle, goodName]) 
 
     const GoodWithLayout = withLayout(Good)
     return error ? <NotFound title={error} /> : <GoodWithLayout title={goodName} paths={paths} good={good} loading={loading} />
