@@ -19,6 +19,7 @@ app.use('/api/auth/', require('./routes/auth'))
 app.use('/api/goods/', require('./routes/goods'))
 app.use('/api/cart/', require('./routes/cart'))
 app.use('/api/orders/', require('./routes/orders'))
+app.use('/api/comments/', require('./routes/comments'))
  
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'client', 'build')))

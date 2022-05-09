@@ -1,9 +1,14 @@
 const mongoose = require('mongoose')
+require('./Good')
+require('./Client')
 
 const OrderSchema = new mongoose.Schema({
     date: { type: Date, required: [true, 'Предоставьте дату заказа'] },
     status: String,
     cost: Number,
+    delivery: String,
+    address: String,
+    paymentType: String,
     items: [{
         amount: Number,
         characteristics: [{

@@ -11,11 +11,12 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',   
     },
-    imageContent: {
+    imageContent:{
         height: '300px',
         color: '#fff',
         textAlign: 'center',
-        background: '#364d79',
+        backgroundColor: '#F5F5F5',
+        backgroundSize: 'cover',
     },
     salePrice: sale => ({
         ...(sale && { color: '#bfbfbf' }),

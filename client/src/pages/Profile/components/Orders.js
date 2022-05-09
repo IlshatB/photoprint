@@ -1,15 +1,51 @@
 import { useMemo } from 'react'
+import { useDispatch } from 'react-redux'
 import dayjs from 'dayjs'
-import { Typography, Collapse, Steps, Descriptions, List } from "antd"
+import { Typography, Collapse, Steps, Descriptions, List, Modal, Button } from "antd"
+import { ExclamationCircleOutlined } from '@ant-design/icons'
+import axios from 'axios'
+
+import { useCurrentClient } from '../../../hooks'
+import { loginClient } from '../../../store/client/actions'
 
 const Orders = ({ client }) => {
+    const dispatch = useDispatch()
+    const { token } = useCurrentClient()
+
     const inProgressOrders = useMemo(() => {
-        return client.orders.filter(o => o.status !== 'delivered')
+        return client.orders.filter(o => o.status !== 'delivered' && o.status !== 'canceled')
     }, [client])
 
     const doneOrders = useMemo(() => {
         return client.orders.filter(o => o.status === 'delivered')
     }, [client])
+
+    const config = useMemo(() => ({
+        headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    }), [token])
+
+    const handleCancelConfirm = async id => {
+        try {
+            await axios.patch(`/api/orders/cancel/${id}`, {}, config)
+            dispatch(loginClient(token))
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    function handleCancel(orderId) {
+        Modal.confirm({
+            title: `Вы действительно хотите отменить данный заказ?`,
+            icon: <ExclamationCircleOutlined />,
+            okText: 'Отменить',
+            okType: 'danger',
+            cancelText: 'Назад',
+            onOk: () => handleCancelConfirm(orderId),
+        });
+    }
 
     return !!client.orders.length 
         ? (
@@ -25,6 +61,9 @@ const Orders = ({ client }) => {
                                         <Descriptions column={1} size="small">
                                             <Descriptions.Item label="Цена">{`${o.cost} руб.`}</Descriptions.Item>
                                             <Descriptions.Item label="Дата заказа">{dayjs(o.date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                                            <Descriptions.Item label="Адрес">{o.address}</Descriptions.Item>
+                                            <Descriptions.Item label="Доставка">{o.delivery === 'courier' ? "Курьером" : 'Почтой'}</Descriptions.Item>
+                                            <Descriptions.Item label="Оплата">{o.paymentType === 'cash' ? "Наличными" : 'Картой'}</Descriptions.Item>
                                         </Descriptions>
                                         <List
                                             dataSource={o.items}
@@ -37,6 +76,11 @@ const Orders = ({ client }) => {
                                             <Steps.Step title="В пути" description="Доставка заказа" />
                                             <Steps.Step title="Доставлено" description="Заказ доставлен" />
                                         </Steps>
+                                        {o.status === 'pending' && (
+                                            <div>
+                                                <Button type="primary" danger onClick={() => handleCancel(o._id)} >Отменить заказ</Button>
+                                            </div>
+                                        )}
                                     </div>
                                 </Collapse.Panel> 
                             )
@@ -55,6 +99,9 @@ const Orders = ({ client }) => {
                                         <Descriptions column={1} size="small" contentStyle={styles.done} labelStyle={styles.done}>
                                             <Descriptions.Item label="Цена">{`${o.cost} руб.`}</Descriptions.Item>
                                             <Descriptions.Item label="Дата заказа">{dayjs(o.date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                                            <Descriptions.Item label="Адрес">{o.address}</Descriptions.Item>
+                                            <Descriptions.Item label="Доставка">{o.delivery === 'courier' ? "Курьером" : 'Почтой'}</Descriptions.Item>
+                                            <Descriptions.Item label="Оплата">{o.paymentType === 'cash' ? "Наличными" : 'Картой'}</Descriptions.Item>
                                         </Descriptions>
                                         <List
                                             dataSource={o.items}
@@ -85,7 +132,7 @@ const Item = ({ item, done = false }) => {
                     {item.amount}
                 </Descriptions.Item>
                 <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
-                    {item.characteristics.map(c => (
+                    {item.characteristics.map(c => c?.value && (
                         <p key={c?.title} style={{ ...(done && styles.done)}}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
                     ))}
                 </Descriptions.Item>

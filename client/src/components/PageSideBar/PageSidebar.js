@@ -9,7 +9,6 @@ import {
     PictureFilled, 
     FileImageFilled, 
     PrinterOutlined, 
-    PercentageOutlined,
     HomeOutlined,
     CarOutlined,
     ShoppingCartOutlined,

@@ -1,4 +1,6 @@
 const jwt_decode = require('jwt-decode')
+const keys = require('../config/keys')
+const stripe = require("stripe")(keys.STRIPE_SECRET_KEY)
 const Client = require('../models/Client')
 
 exports.fetchCart = async (req, res, next) => {
@@ -8,7 +10,7 @@ exports.fetchCart = async (req, res, next) => {
     try {
         const client = await Client.findById(id).populate({
             path: 'cart.good',
-            select: 'name subDescription price sale',
+            select: 'name subDescription price sale images category',
         })
         
         if (!client) {
@@ -85,6 +87,22 @@ exports.removeItem = async (req, res, next) => {
         await client.save()
 
         return res.status(200).json({ success: true, cartItems: client.cart })
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+exports.payment = async (req, res, next) => {
+    const { cost } = req.body
+
+    try {
+        const paymentIntent = await stripe.paymentIntents.create({
+            payment_method_types: ['card'],
+            amount: cost + 100000,
+            currency: "rub",
+        })
+
+        res.send({ clientSecret: paymentIntent.client_secret })
     } catch (e) {
         console.log(e)
     }
