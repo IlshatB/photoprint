@@ -7,12 +7,14 @@
     "node": "16.13.1",
     "npm": "8.1.2"
   },
+  "homepage": "https://photoprint-node.herokuapp.com/",
   "scripts": {
+    "client-install": "npm install --prefix client",
     "start": "node index.js",
     "server": "nodemon index.js",
-    "client": "cd client && npm run start",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false && cd client && npm install && npm run build"
+    "client": "npm start --prefix client",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "",
   "license": "ISC",
