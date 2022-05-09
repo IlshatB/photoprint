@@ -1,18 +1,19 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { Card, Typography, Skeleton, Carousel, Image, Tabs, Button, Radio, Descriptions, Form, Space } from 'antd'
+import { Card, Typography, Skeleton, Carousel, Image, Tabs, Button, Radio, Descriptions, Form, Space, List, Comment, Rate } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
-
-import { getTimeByString } from '../../helpers'
-import useCart from '../Cart/useCart'
-
+import dayjs from 'dayjs'
 
 import fallback from '../../assets/images/fallback.png'
+import { getTimeByString, commentWord } from '../../helpers'
+import useCart from '../Cart/useCart'
+import CommentForm from '../Comments/CommentForm'
+
 import styles from './goodStyles'
 
 
-const Good = ({ good, loading = false }) => {
+const Good = ({ good, loading = false, refetch }) => {
     const [form] = Form.useForm()
     const { cartItems } = useSelector(store => store.client)
     const { onAdd, onInsert } = useCart()
@@ -27,7 +28,6 @@ const Good = ({ good, loading = false }) => {
     const types = useMemo(() => {
         return good?.types.filter(t => !!t !== false) ?? []
     }, [good?.types])
-
 
     const handleAddToCart = async () => {
         const variables = {
@@ -48,38 +48,66 @@ const Good = ({ good, loading = false }) => {
         }
 
     }
-
     const hideCharacteristics = !Boolean(sizes.length) && !Boolean(good?.size) && !Boolean(types.length) && !Boolean(good?.type)
     const disableAddToCart = isSubmitDisabled(selectedSize, selectedType, sizes, types)
-
     return (
-        <Card title={<CardTitle good={good} loading={loading} disableAddToCart={disableAddToCart} handleAddToCart={handleAddToCart} />} bordered={false}>
-            <Form
-                form={form}
-                name='good_view_form'
-            >
-                <CardImages images={good?.images ?? []} loading={loading} />
-                <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
-                    <Tabs.TabPane tab="Описание" key="description">
-                        <Description description={good?.description ?? ''} loading={loading} />
-                    </Tabs.TabPane>
-                    {!hideCharacteristics && (
-                        <Tabs.TabPane tab="Характеристики" key="features">
-                            <Characteristics
-                                good={good}
-                                selectedSize={selectedSize}
-                                selectedType={selectedType}
-                                setSelectedSize={setSelectedSize}
-                                setSelectedType={setSelectedType}
-                            />
+        <>
+            <Card title={<CardTitle good={good} loading={loading} disableAddToCart={disableAddToCart} handleAddToCart={handleAddToCart} />} bordered={false}>
+                <Form
+                    form={form}
+                    name='good_view_form'
+                >
+                    <CardImages images={good?.images ?? []} loading={loading} />
+                    <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
+                        <Tabs.TabPane tab="Описание" key="description">
+                            <Description description={good?.description ?? ''} loading={loading} />
                         </Tabs.TabPane>
-                    )}
-                </Tabs>
-            </Form>
-        </Card>
+                        {!hideCharacteristics && (
+                            <Tabs.TabPane tab="Характеристики" key="features">
+                                <Characteristics
+                                    good={good}
+                                    selectedSize={selectedSize}
+                                    selectedType={selectedType}
+                                    setSelectedSize={setSelectedSize}
+                                    setSelectedType={setSelectedType}
+                                />
+                            </Tabs.TabPane>
+                        )}
+                    </Tabs>
+                </Form>
+            </Card>
+            <CommentForm goodId={good?._id} refetch={refetch} />
+            <CommentList comments={good?.comments} loading={loading} />
+        </>
     )
 }
 
+const CommentList = ({ comments, loading }) => {
+    return (
+        !loading ? (
+            <List
+                className="comment-list"
+                header={`${comments?.length} ${commentWord(comments?.length)}`}
+                itemLayout="horizontal"
+                dataSource={comments}
+                renderItem={item => (
+                    <div style={{ background: "white", marginTop: '20px', padding: '20px' }}>
+                        <Rate disabled value={item.grade} />
+                        <Comment
+                            content={item.text}
+                            datetime={dayjs(item.date).format('DD/MM/YYYY HH:mm')}
+
+                        />
+                    </div>
+                )}
+            />
+        ) : (
+            <Skeleton />
+        )
+
+    )
+
+}
 const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
     const client = useSelector(store => store.client)
     const isSale = !!good?.sale

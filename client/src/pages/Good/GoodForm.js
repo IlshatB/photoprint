@@ -68,7 +68,6 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                 .ref("images/" + fileName)
                 .put(file)
             const url = await snapshot.ref.getDownloadURL()
-            console.log(url)
             const firebaseInfo = {
                 name: fileName,
                 url,
