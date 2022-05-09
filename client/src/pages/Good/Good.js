@@ -15,7 +15,7 @@ import styles from './goodStyles'
 
 const Good = ({ good, loading = false, refetch }) => {
     const [form] = Form.useForm()
-    const { cartItems } = useSelector(store => store.client)
+    const { cartItems, orders } = useSelector(store => store.client)
     const { onAdd, onInsert } = useCart()
 
     const [selectedSize, setSelectedSize] = useState()
@@ -48,8 +48,18 @@ const Good = ({ good, loading = false, refetch }) => {
         }
 
     }
+
+    const showCommentsForm = useMemo(() => {
+        const isFound = orders.find(o => o.items.find(i => i.good._id === good?._id) && o.status === 'delivered')
+
+        return !!isFound
+    }, [orders, good?._id])
+
     const hideCharacteristics = !Boolean(sizes.length) && !Boolean(good?.size) && !Boolean(types.length) && !Boolean(good?.type)
     const disableAddToCart = isSubmitDisabled(selectedSize, selectedType, sizes, types)
+  
+    console.log(good)
+
     return (
         <>
             <Card title={<CardTitle good={good} loading={loading} disableAddToCart={disableAddToCart} handleAddToCart={handleAddToCart} />} bordered={false}>
@@ -76,8 +86,8 @@ const Good = ({ good, loading = false, refetch }) => {
                     </Tabs>
                 </Form>
             </Card>
-            <CommentForm goodId={good?._id} refetch={refetch} />
-            <CommentList comments={good?.comments} loading={loading} />
+            {showCommentsForm && <CommentForm goodId={good?._id} refetch={refetch} />}
+            {good?.comments.length === 0 ? [] : <CommentList comments={good?.comments} loading={loading} />}
         </>
     )
 }
