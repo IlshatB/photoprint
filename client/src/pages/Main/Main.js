@@ -52,7 +52,7 @@ const Main = () => {
           sales.map(good => {
             const link = '/' + good.category + '/' + good._id
             return (
-              <div >
+              <div key={good._id} >
                 <div style={contentStyle.mainContent}>
                     <Row>
                     <Col xs={0} sm={0} md={14} lg={16} xl={16}>

@@ -57,7 +57,6 @@ exports.fetchGood = async (req, res, next) => {
             select: 'text date grade',
             populate: { path: 'client', select: 'email' },
         })
-
         res.status(200).json({
             success: true,
             good

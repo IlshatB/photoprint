@@ -15,7 +15,7 @@ exports.fetchOrders = async (req, res, next) => {
         const orders = await Order.find({ status: { $ne: 'delivered' } }).populate({
             path: 'items.good', select: 'name subDescription price sale'
         })
-         
+
         return res.status(200).json({ success: true, orders })
     } catch (e) {
         console.log(e)
@@ -50,7 +50,7 @@ exports.makeOrder = async (req, res, next) => {
             if (!client) return res.status(409).send('Пользователь не найден')
 
             client.cart = []
-            client.orders = [ ...client.orders, order._id ]
+            client.orders = [...client.orders, order._id]
             await client.save()
 
             return res.status(200).json({ success: true, client })
@@ -115,16 +115,13 @@ exports.cancelOrder = async (req, res, next) => {
         const order = await Order.findById(orderId).populate({
             path: 'client', select: 'email'
         })
-
         if (!order) {
             return res.status(401).send('Заказ не найден')
         }
 
         if (isAdmin || id === order.client._id.toString()) {
-                    console.log(222)
             order.status = 'canceled'
             await order.save()
-
             const message = `<p>Заказ <b>№${orderId}</b> отменён</p>`
 
             await sendEmail({
@@ -135,7 +132,7 @@ exports.cancelOrder = async (req, res, next) => {
 
             return res.status(200).json({ success: true, order })
         }
-        
+
         res.status(401).send('Нет доступа')
     } catch (e) {
         next(e)
@@ -147,8 +144,8 @@ function getStatusLabel(status) {
         case 'pending':
             return 'Ожидание'
         case 'production':
-            return 'Производство'    
-        case 'delivery': 
+            return 'Производство'
+        case 'delivery':
             return 'В пути'
         case 'delivered':
             return 'Доставлено'
