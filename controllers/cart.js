@@ -94,16 +94,22 @@ exports.removeItem = async (req, res, next) => {
 
 exports.payment = async (req, res, next) => {
     const { cost } = req.body
-
+    console.log(cost)
     try {
+        console.log(111)
         const paymentIntent = await stripe.paymentIntents.create({
             payment_method_types: ['card'],
-            amount: cost + 100000,
+            amount: cost + 10000,
             currency: "rub",
         })
+        console.log(222)
+        console.log(paymentIntent)
+        console.log(paymentIntent.client_secret)
 
         res.send({ clientSecret: paymentIntent.client_secret })
     } catch (e) {
+        console.log(333)
         console.log(e)
+        next(e)
     }
 }

@@ -14,8 +14,8 @@ export const getCategoryTitle = category => {
 export const categories = {
     photobooks: 'Фотокниги',
     photos: 'Фотографии',
-    print: 'Печать',
-    souvenirs: 'Сувениры',
+    print: 'Интерьерная печать',
+    souvenirs: 'Фотосувениры',
     calendars: 'Календари',
 }
 

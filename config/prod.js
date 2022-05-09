@@ -7,6 +7,7 @@ module.exports = {
     EMAIL_USERNAME: process.env.EMAIL_USERNAME,
     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
     EMAIL_FROM: process.env.EMAIL_FROM,
-    RESET_URL: process.env.RESET_URL
+    RESET_URL: process.env.RESET_URL,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   };
   
