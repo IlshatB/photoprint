@@ -112,11 +112,10 @@ exports.cancelOrder = async (req, res, next) => {
 
     const { orderId } = req.params
     try {
-        console.log(orderId)
         const order = await Order.findById(orderId).populate({
             path: 'client', select: 'email'
         })
-        console.log(order)
+
         if (!order) {
             return res.status(401).send('Заказ не найден')
         }
