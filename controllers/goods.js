@@ -85,6 +85,20 @@ exports.fetchGoods = async (req, res, next) => {
     }
 }
 
+exports.fetchSales = async (req, res, next) => {
+    try {
+        const allSales = await Good.find({ sale: { $exists: true } })
+        res.status(200).json({
+            success: true,
+            allSales
+        })
+    }
+    catch (e) {
+        next(e)
+    }
+
+}
+
 exports.saveCart = async (req, res, next) => {
     const { clientId } = req.params
     const { items } = req.body
