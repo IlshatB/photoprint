@@ -23,9 +23,7 @@ app.use('/api/comments/', require('./routes/comments'))
  
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'client', 'build')))
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'))
-    })
+    app.use('*', express.static(path.join(__dirname, "client", "build")))
 }
 
 mongoose.connect(keys.MONGO_URI, {
