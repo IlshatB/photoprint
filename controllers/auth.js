@@ -1,7 +1,6 @@
 const crypto = require('crypto')
 const jwt_decode = require('jwt-decode')
 const Client = require('../models/Client')
-const ErrorResponse = require('../utils/errorResponse')
 const keys = require('../config/keys')
 const sendEmail = require('../utils/sendEmail')
 
@@ -125,10 +124,10 @@ exports.fetch = async (req, res, next) => {
     try {
         const client = await Client.findById(id).populate({
             path: 'cart.good',
-            select: 'name subDescription price sale',
+            select: 'name subDescription price sale images category',
         }).populate({
             path: 'orders',
-            select: 'date status cost items',
+            select: 'date status cost items address paymentType delivery',
             populate: [
                 { path: 'items.good', select: 'name subDescription price sale' },
             ],

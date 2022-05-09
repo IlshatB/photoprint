@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Layout, Typography, Divider, Breadcrumb, Affix, Badge, Avatar } from 'antd'
-import {  ShoppingCartOutlined } from '@ant-design/icons'
+import { ShoppingCartOutlined } from '@ant-design/icons'
 import { blue } from '@ant-design/colors'
 
 import { useCurrentClient } from '../hooks'

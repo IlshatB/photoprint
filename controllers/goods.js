@@ -52,7 +52,12 @@ exports.fetchGood = async (req, res, next) => {
     const { id } = req.params
 
     try {
-        const good = await Good.findById(id)
+        const good = await Good.findById(id).populate({
+            path: 'comments',
+            select: 'text date grade',
+            populate: { path: 'client', select: 'email' },
+        })
+
         res.status(200).json({
             success: true,
             good

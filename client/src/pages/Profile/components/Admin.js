@@ -1,9 +1,10 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import dayjs from 'dayjs'
 
-import { List, Typography, Descriptions, Steps } from 'antd'
+import { List, Typography, Descriptions, Steps, Modal, Button } from 'antd'
+import { ExclamationCircleOutlined } from '@ant-design/icons'
 
 import { useCurrentClient } from '../../../hooks'
 
@@ -11,17 +12,17 @@ const Admin = () => {
     const { token } = useCurrentClient()
     const [orders, setOrders] = useState([])
 
-    const fetchOrders = async () => {
-        const { data } = await axios.get('/api/orders/fetch', config)
-        setOrders(data.orders)
-    }
-
     const config = useMemo(() => ({
         headers: { 
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
     }), [token])
+
+    const fetchOrders = useCallback(async () => {
+        const { data } = await axios.get('/api/orders/fetch', config)
+        setOrders(data.orders.filter(o => o.status !== 'canceled'))
+    }, [config])
 
     useEffect(() => {
         fetchOrders()
@@ -37,6 +38,26 @@ const Admin = () => {
         }
     }
 
+    const handleCancelConfirm = async id => {
+        try {
+            await axios.patch(`/api/orders/cancel/${id}`, {}, config)
+            fetchOrders()
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    function handleCancel(orderId) {
+        Modal.confirm({
+            title: `Вы действительно хотите отменить данный заказ?`,
+            icon: <ExclamationCircleOutlined />,
+            okText: 'Отменить',
+            okType: 'danger',
+            cancelText: 'Назад',
+            onOk: () => handleCancelConfirm(orderId),
+        });
+    }
+
     return (
         <div>
             <Link to="new">Новая услуга / товар</Link>
@@ -44,14 +65,14 @@ const Admin = () => {
                 <Typography.Title level={5}>Активные заказы</Typography.Title>
                 <List 
                     dataSource={orders}
-                    renderItem={order => <Order order={order} handleUpdateOrder={handleUpdateOrder} />}
+                    renderItem={order => <Order order={order} handleUpdateOrder={handleUpdateOrder} handleCancel={handleCancel} />}
                 />
             </div>
         </div>
     )
 }
 
-const Order = ({ order, handleUpdateOrder }) => {
+const Order = ({ order, handleUpdateOrder, handleCancel }) => {
     return (
         <div style={{ backgroundColor: '#fff', padding: 8, marginBottom: 16 }}>
             <Typography.Paragraph type="secondary">
@@ -63,6 +84,9 @@ const Order = ({ order, handleUpdateOrder }) => {
             <Descriptions column={1} size="small">
                 <Descriptions.Item label="Цена">{`${order.cost} руб.`}</Descriptions.Item>
                 <Descriptions.Item label="Дата заказа">{dayjs(order.date).format('DD/MM/YYYY HH:mm')}</Descriptions.Item>
+                <Descriptions.Item label="Адрес">{order.address}</Descriptions.Item>
+                <Descriptions.Item label="Доставка">{order.delivery === 'courier' ? "Курьером" : 'Почтой'}</Descriptions.Item>
+                <Descriptions.Item label="Оплата">{order.paymentType === 'cash' ? "Наличными" : 'Картой'}</Descriptions.Item>                
             </Descriptions>
             <List
                 dataSource={order.items}
@@ -76,6 +100,11 @@ const Order = ({ order, handleUpdateOrder }) => {
                     <Steps.Step title="Доставлено" />
                 </Steps>
             </div>
+            {order.status === 'pending' && (
+                <div>
+                     <Button type="primary" danger onClick={() => handleCancel(order._id)} >Отменить заказ</Button>
+                 </div>
+             )}
         </div>
     )
 }
@@ -91,7 +120,7 @@ const Item = ({ item }) => {
                     {item.amount}
                 </Descriptions.Item>
                 <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
-                    {item.characteristics.map(c => (
+                    {item.characteristics.map(c => c?.value && (
                         <p key={c?.title}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
                     ))}
                 </Descriptions.Item>

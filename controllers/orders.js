@@ -99,10 +99,47 @@ exports.updateOrder = async (req, res, next) => {
 
             return res.status(200).json({ success: true, order })
         } catch (e) {
-            console.log(e)
+            next(e)
         }
     } catch (e) {
-        console.log(e)
+        next(e)
+    }
+}
+
+exports.cancelOrder = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { isAdmin, id } = jwt_decode(token)
+
+    const { orderId } = req.params
+    try {
+        console.log(orderId)
+        const order = await Order.findById(orderId).populate({
+            path: 'client', select: 'email'
+        })
+        console.log(order)
+        if (!order) {
+            return res.status(401).send('Заказ не найден')
+        }
+
+        if (isAdmin || id === order.client._id.toString()) {
+                    console.log(222)
+            order.status = 'canceled'
+            await order.save()
+
+            const message = `<p>Заказ <b>№${orderId}</b> отменён</p>`
+
+            await sendEmail({
+                to: order.client.email,
+                subject: "Отмена заказа",
+                text: message
+            })
+
+            return res.status(200).json({ success: true, order })
+        }
+        
+        res.status(401).send('Нет доступа')
+    } catch (e) {
+        next(e)
     }
 }
 

@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 
+require('./Comment')
+
 const GoodSchema = new mongoose.Schema({
     category: {
         type: String,
@@ -36,6 +38,7 @@ const GoodSchema = new mongoose.Schema({
         type: Boolean,
         default: true,
     },
+    comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
 })
 
 module.exports = mongoose.model('Good', GoodSchema)

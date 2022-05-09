@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { getCategoryTitle, categories } from '../../helpers'
+import { categories } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import Good from './Good'
