@@ -37,7 +37,7 @@ const Main = () => {
     async function fetchData() {
       try {
         const { data } = await axios.get('/api/goods/fetch/goodSale', { headers: { "Content-Type": "application/json" } })
-        sales.map(good => urlArray.push(good.images[0].url))
+        sales.map(good => urlArray.push(good?.images[0]?.url))
         setSales(data.allSales)
       } catch (e) {
         console.error(e.response.data)
@@ -54,8 +54,10 @@ const Main = () => {
             return (
               <div >
                 <div style={contentStyle.mainContent}>
-                  <div style={contentStyle.saleContainer}>
-                    <Typography.Text style={{ color: 'white', fontSize: '40px' }} >
+                    <Row>
+                    <Col xs={0} sm={0} md={14} lg={16} xl={16}>
+                    <div style={contentStyle.saleContainer}>
+                      <Typography.Text style={{ color: 'white', fontSize: '40px' }} >
                       {good.name}
                     </Typography.Text>
                     <Typography.Text style={{ color: 'white', fontSize: '40px', fontWeight: 'bold' }} >
@@ -65,7 +67,13 @@ const Main = () => {
                       Посмотреть
                     </Button>
                   </div>
-                  <Image height={300} src={good.images[0].url} preview={false} />
+                  </Col>
+                      
+                      <Col xs={24} sm={24} md={10} lg={8} xl={8} styles={{ display: 'flex' }}>
+                      <Image height={300} style={{ objectFit: 'contain', flexGrow: 1}} src={good?.images[0]?.url} preview={false} />
+                      
+                      </Col>
+                    </Row>
                 </div>
               </div>
             )
@@ -73,8 +81,8 @@ const Main = () => {
         }
       </Carousel >
       <div style={{ marginTop: '50px' }}>
-        <Row gutter={16} >
-          <Col md={24} lg={16} xl={8} style={{ display: 'flex' }}>
+        <Row gutter={[16, 16]} >
+          <Col xs={24} md={12} lg={12} xl={8} style={{ display: 'flex' }}>
             <Card title="Мы ценим каждого клиента" bordered={false} style={{ flexGrow: 1 }}>
               <Card.Meta
                 description='Наша жизнь - это впечатления!
@@ -85,7 +93,7 @@ const Main = () => {
               />
             </Card>
           </Col>
-          <Col md={24} lg={16} xl={8} style={{ display: 'flex' }}>
+          <Col xs={24} md={12} lg={12} xl={8} style={{ display: 'flex' }}>
             <Card title="Вы останетесь довольны" bordered={false} style={{ flexGrow: 1 }}>
               <Card.Meta
                 description='Мы печатаем ваши изображения на бумаге премиального качества.
@@ -96,7 +104,7 @@ const Main = () => {
               />
             </Card>
           </Col>
-          <Col md={24} lg={16} xl={8} style={{ display: 'flex' }}>
+          <Col xs={24} md={12} lg={12} xl={8} style={{ display: 'flex' }}>
             <Card
               title="Мы всегда с вами"
               bordered={false}

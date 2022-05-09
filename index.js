@@ -30,7 +30,7 @@ app.use(function(err, req, res, next) {
   }
   return res.status(err.status || HTTP_SERVER_ERROR).render('500')
 })
-
+console.log(PORT)
 mongoose.connect(keys.MONGO_URI, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
