@@ -7,12 +7,6 @@ const keys = require('./config/keys')
 const PORT = process.env.PORT || 5000
  
 const HTTP_SERVER_ERROR = 500
-app.use(function(err, req, res, next) {
-  if (res.headersSent) {
-    return next(err)
-  }
-  return res.status(err.status || HTTP_SERVER_ERROR).render('500')
-})
 
 app.use(express.json())
 app.use('/static/public', express.static(__dirname + '/public'))
@@ -29,6 +23,13 @@ if (process.env.NODE_ENV === "production") {
         res.sendFile(path.join(__dirname, "client/build", "index.html"));
     })
 }
+
+app.use(function(err, req, res, next) {
+  if (res.headersSent) {
+    return next(err)
+  }
+  return res.status(err.status || HTTP_SERVER_ERROR).render('500')
+})
 
 mongoose.connect(keys.MONGO_URI, {
     useUnifiedTopology: true,
