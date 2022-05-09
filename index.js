@@ -13,6 +13,7 @@ app.use(function(err, req, res, next) {
   }
   return res.status(err.status || HTTP_SERVER_ERROR).render('500')
 })
+
 app.use(express.json())
 app.use('/static/public', express.static(__dirname + '/public'))
 app.use('/api/auth/', require('./routes/auth'))
