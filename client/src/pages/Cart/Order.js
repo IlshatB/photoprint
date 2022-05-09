@@ -47,7 +47,7 @@ const OrderContainer = ({ items = [], cost = 0, setProgress, omMakeOrder }) => {
     useEffect(() => {
         const getSecret = async () => {
             try {
-                const { data } = await axios.post('/api/cart/create-payment-intent', { cost }, { headers: { "Content-Type": "application/json" } })
+                const { data } = await axios.post('/api/cart/create-payment-intent', { cost: Math.round(cost) }, { headers: { "Content-Type": "application/json" } })
                 setClientSecret(data.clientSecret)
             } catch (e) {
                 console.log(e)

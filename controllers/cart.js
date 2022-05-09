@@ -98,7 +98,7 @@ exports.payment = async (req, res, next) => {
     try {
         const paymentIntent = await stripe.paymentIntents.create({
             payment_method_types: ['card'],
-            amount: Math.round(cost + 10000),
+            amount: cost + 10000,
             currency: "rub",
         })
 
