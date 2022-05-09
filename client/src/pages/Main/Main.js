@@ -37,7 +37,7 @@ const Main = () => {
     async function fetchData() {
       try {
         const { data } = await axios.get('/api/goods/fetch/goodSale', { headers: { "Content-Type": "application/json" } })
-        sales.map(good => urlArray.push(good.images[0].url))
+        sales.map(good => urlArray.push(good?.images[0]?.url))
         setSales(data.allSales)
       } catch (e) {
         console.error(e.response.data)
@@ -52,7 +52,7 @@ const Main = () => {
           sales.map(good => {
             const link = '/' + good.category + '/' + good._id
             return (
-              <div >
+              <div key={good._id} >
                 <div style={contentStyle.mainContent}>
                   <div style={contentStyle.saleContainer}>
                     <Typography.Text style={{ color: 'white', fontSize: '40px' }} >
@@ -65,7 +65,7 @@ const Main = () => {
                       Посмотреть
                     </Button>
                   </div>
-                  <Image height={300} src={good.images[0].url} preview={false} />
+                  <Image height={300} src={good?.images[0]?.url} preview={false} />
                 </div>
               </div>
             )
@@ -73,7 +73,7 @@ const Main = () => {
         }
       </Carousel >
       <div style={{ marginTop: '50px' }}>
-        <Row gutter={16} >
+        <Row gutter={[16,16]} >
           <Col md={24} lg={16} xl={8} style={{ display: 'flex' }}>
             <Card title="Мы ценим каждого клиента" bordered={false} style={{ flexGrow: 1 }}>
               <Card.Meta
