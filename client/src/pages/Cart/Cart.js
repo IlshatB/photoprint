@@ -66,7 +66,7 @@ const Cart = () => {
                         Заказать
                     </Button>
                 </div>
-                <Modal width="70%" bodyStyle={{ minHeight: '400px' }} title={<OrderTitle progress={progress} />} visible={open} onCancel={() => setOpen(false)}>
+                <Modal width="70%" cancelText="Назад" okText={null} onOk={null}  bodyStyle={{ minHeight: '400px' }} title={<OrderTitle progress={progress} />} visible={open} onCancel={() => setOpen(false)}>
                     <OrderContainer items={cartItems} cost={cost} setProgress={setProgress} omMakeOrder={handleMakeOrder} />
                 </Modal>
             </>
