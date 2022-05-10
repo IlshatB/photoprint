@@ -15,6 +15,11 @@ exports.signUp = async (req, res, next) => {
         if (e.message.includes('duplicate key error collection')) {
             return res.status(409).send('Пользователь существует')
         }
+
+        if (e.message.includes('is shorter than the minimum allowed length')) {
+            return res.status(400).send('Длина пароля должна быть не менее 6 символов')
+        }
+
         next(e)
     }
 }

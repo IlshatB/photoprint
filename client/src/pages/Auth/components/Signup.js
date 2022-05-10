@@ -19,18 +19,15 @@ const Signup = ({ onSignup, toLogIn }) => {
             .catch(error => {
               if (error.includes('Пользователь существует')) { 
                 form.setFields([
-                  {
-                    name: 'email',
-                    errors: [error]
-                  },
-                  {
-                    name: 'password',
-                    value: '',
-                  },
-                  {
-                    name: 'confirm',
-                    value: '',
-                  },
+                  { name: 'email', errors: [error] },
+                  { name: 'password', value: '', errors: [''] },
+                  { name: 'confirm', value: '', errors: [''] },
+                ])
+              }
+              if (error.includes('Длина пароля должна быть не менее 6 символов')) { 
+                form.setFields([
+                  { name: 'password', value: '', errors: [''] },
+                  { name: 'confirm', value: '', errors: [error] },
                 ])
               }
             })

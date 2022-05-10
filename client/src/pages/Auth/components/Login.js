@@ -11,11 +11,11 @@ const Login = ({ onLogin, toSignUp }) => {
         onLogin(values).catch(error => {
             if(error.includes('Пользователь не найден')) {
                 form.setFields([
-                   { name: 'email', value: '', errors: [error] },
-                   { name: 'password',  value: '' },
+                   { name: 'email', errors: [error] },
+                   { name: 'password', value: '', errors: [''] },
                 ])
             } else if (error.includes('Неверный пароль')) {
-                form.setFields([ { name: 'password', errors: [error] } ])
+                form.setFields([ { name: 'password', value: '', errors: [error] } ])
             }
         })
     }

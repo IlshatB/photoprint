@@ -58,8 +58,6 @@ const Good = ({ good, loading = false, refetch }) => {
     const hideCharacteristics = !Boolean(sizes.length) && !Boolean(good?.size) && !Boolean(types.length) && !Boolean(good?.type)
     const disableAddToCart = isSubmitDisabled(selectedSize, selectedType, sizes, types)
   
-    console.log(good)
-
     return (
         <>
             <Card title={<CardTitle good={good} loading={loading} disableAddToCart={disableAddToCart} handleAddToCart={handleAddToCart} />} bordered={false}>
@@ -104,6 +102,7 @@ const CommentList = ({ comments, loading }) => {
                     <div style={{ background: "white", marginTop: '20px', padding: '20px' }}>
                         <Rate disabled value={item.grade} />
                         <Comment
+                            author={item.client.email}
                             content={item.text}
                             datetime={dayjs(item.date).format('DD/MM/YYYY HH:mm')}
 
