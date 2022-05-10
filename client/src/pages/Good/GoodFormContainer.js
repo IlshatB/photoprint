@@ -35,7 +35,7 @@ const GoodFormContainer = ({ edit = false }) => {
         }
 
         if (edit) fetchData()
-    }, [edit, goodId])
+    }, [edit, goodId, config])
 
     const handleCreate = async values => {
         const { size, type } = values
