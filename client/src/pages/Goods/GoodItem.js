@@ -8,10 +8,12 @@ import fallback from '../../assets/images/fallback.png'
 import './goods.css'
 
 const styles = {
-    card: { height: "100%", display: 'flex', flexDirection: 'column' },
+    col: { width: '100%' },
+    card: { height: "100%", width: '100%', display: 'flex', flexDirection: 'column' },
+    linkWrapper: { width: '100%' },
     block: { display: 'flex', justifyContent: "space-between", marginTop: '16px' },
-    img: { objectFit: 'contain', height: '180px', zIndex: 2 },
-    imgBackground: { position: 'absolute', top: 0, width: '100%', height: '180px', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
+    img: { objectFit: 'contain', height: '180px', width: '100%', zIndex: 2 },
+    imgBackground: { position: 'absolute', top: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7, zIndex: 1 },
     backgroundContainer: (noImage = false) => ({ 
         position: 'relative', 
         backgroundColor: '#a6a6a6', 
@@ -24,12 +26,12 @@ const styles = {
 
 const GoodItem = ({ good }) => {
     return (
-        <Col sm={24} lg={12} xl={8}>
-            <Link to={`/photobooks/${good?._id}`}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={styles.col}>
+            <Link to={`/photobooks/${good?._id}`} style={styles.linkWrapper}>
                 <Card
                     hoverable
                     cover={
-                        <div style={styles.backgroundContainer(!good?.images[0])}>
+                        <div style={styles.backgroundContainer(!good?.images[0]?.url)}>
                             {good?.images[0] && (
                                 <img
                                 style={styles.imgBackground}
@@ -67,7 +69,7 @@ const GoodItem = ({ good }) => {
 
 const Loading = () => {
     return (
-        <Col sm={24} lg={12} xl={8}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={8} style={styles.col}>
             <Card
                 hoverable
                 cover={

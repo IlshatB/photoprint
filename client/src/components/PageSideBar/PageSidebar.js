@@ -17,7 +17,7 @@ import {
     LogoutOutlined,
 } from '@ant-design/icons'
 
-import { useCurrentClient } from '../../hooks'
+import { useCurrentClient, useWindowWidth } from '../../hooks'
 
 import './pageSideBar.css'
 
@@ -25,6 +25,8 @@ const PageSideBar = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const { isAuthenticated, exit } = useCurrentClient()
+    const { width } = useWindowWidth()
+
     const { cartItems = [] } = useSelector(store => store.client)
 
     const amounts = useMemo(() => {
@@ -44,12 +46,12 @@ const PageSideBar = () => {
         const footer = document.querySelector('footer.ant-layout-footer')
 
         if (document.body.clientWidth < 600 && !value) {
-            content.style.display = 'none';
-            footer.style.display = 'none';
+            content.style.display = 'none'
+            footer.style.display = 'none'
         }
         else {
-            content.style.display = 'block';
-            footer.style.display = 'block';    
+            content.style.display = 'block'
+            footer.style.display = 'block'
         }
     }
 
@@ -58,12 +60,15 @@ const PageSideBar = () => {
         navigate('/home')
     }
 
+    const smallScreenCollapse = !!(width < 992)
+
     return (
             <Layout.Sider
                 width={300}
                 collapsible 
-                collapsed={collapsed} 
-                onCollapse={handleCollapse}
+                collapsed={smallScreenCollapse ? true : collapsed} 
+                trigger={smallScreenCollapse}
+                onCollapse={!smallScreenCollapse ? handleCollapse : () => {}}  
                 breakpoint="lg"
                 style={{ overflow: 'auto'}}
                 theme="light"
@@ -112,7 +117,7 @@ const PageSideBar = () => {
                             </Link>
                         </Menu.Item>
                     )}
-                    {collapsed ? <Menu.Divider /> : (
+                    {collapsed || width < 992 ? <Menu.Divider /> : (
                         <Menu.Item key="divider">
                             <Divider plain>УСЛУГИ</Divider>
                         </Menu.Item>   

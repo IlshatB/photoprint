@@ -2,9 +2,10 @@ import { Row, Button } from 'antd'
 import GoodItem from './GoodItem'
 
 const Goods = ({ goods = [], loading = false, moreLoading = false, onLoadMore }) => {
+    const gutters = { xs: 16, sm: 16, md: 32, lg: 32, xl: 32, xxl: 64 }
     return (
         <>
-            <Row gutter={[{ lg: 32,  xl: 32, xxl: 64 }, 64]} type="flex">
+            <Row gutter={[gutters, gutters]} type="flex">
                 {!loading 
                     ? goods.map(good => (
                         <GoodItem key={good._id} good={good} />
