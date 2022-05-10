@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Col, Card, Typography, Skeleton } from 'antd'
 
@@ -25,6 +26,10 @@ const styles = {
 }
 
 const GoodItem = ({ good }) => {
+    const showBy = useMemo(() => {
+        return good?.sizes.some(s => !!s.cost)
+    }, [])
+
     return (
         <Col xs={24} sm={24} md={12} lg={12} xl={8} style={styles.col}>
             <Link to={good?._id} style={styles.linkWrapper}>
@@ -54,7 +59,7 @@ const GoodItem = ({ good }) => {
                     <div style={styles.block}>
                         <div>
                             <Typography.Paragraph type="primary">
-                                {`${getPriceWithSale(good?.price, good?.sale)} руб.`}
+                                {showBy && 'от'} {getPriceWithSale((good?.price || 0), good?.sale)} руб.
                             </Typography.Paragraph>
                             <Typography.Text type="secondary">
                                 {good?.productionTime && `Срок изготовления: ${getTimeByString(good?.productionTime)}`}
@@ -101,5 +106,5 @@ GoodItem.Loading = Loading
 export default GoodItem
 
 const getPriceWithSale = (price, sale) => {
-    return sale ? price * (100 - sale) / 100 : price
+    return sale ? <span><del style={{ color: '#a1a1a1' }}>{price} </del>{price * (100 - sale) / 100}</span> : price
 }

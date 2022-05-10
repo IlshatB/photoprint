@@ -26,19 +26,24 @@ const Good = ({ good, loading = false, refetch }) => {
     const [selectedType, setSelectedType] = useState()
 
     const sizes = useMemo(() => {
-        return good?.sizes.filter(s => !!s !== false) ?? []
+        return good?.sizes.filter(s => !!s.value !== false) ?? []
     }, [good?.sizes])
 
     const types = useMemo(() => {
-        return good?.types.filter(t => !!t !== false) ?? []
+        return good?.types.filter(t => !!t.value !== false) ?? []
     }, [good?.types])
+
+    const finalCost = useMemo(() => {
+        const cost = (good?.price || 0) + (sizes.find(s => s.value === selectedSize)?.cost || 0) + (types.find(t => t.value === selectedType)?.cost || 0)
+        return cost
+    }, [good, sizes, types, selectedSize, selectedType])
 
     const handleAddToCart = async () => {
         const variables = {
             good: good?._id,
             characteristics: [
-                { title: 'size', value: good?.size ?? selectedSize },
-                { title: 'type', value: good?.type ?? selectedType },
+                { title: 'size', value: good?.size ?? selectedSize, cost: good?.sizes[good?.sizes.findIndex(s => s.value === selectedSize)]?.cost  },
+                { title: 'type', value: good?.type ?? selectedType, cost: good?.types[good?.types.findIndex(t => t.value === selectedSize)]?.cost  },
             ],
         }
 
@@ -69,6 +74,7 @@ const Good = ({ good, loading = false, refetch }) => {
                     <CardTitle
                         good={good}
                         loading={loading}
+                        finalCost={finalCost}
                         disableAddToCart={disableAddToCart}
                         handleAddToCart={handleAddToCart}
                     />
@@ -80,7 +86,7 @@ const Good = ({ good, loading = false, refetch }) => {
                     name='good_view_form'
                 >
                     <CardImages images={good?.images ?? []} loading={loading} width={width} />
-                    <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
+                    <Tabs defaultActiveKey="description" onChange={() => {}} type="card">
                         <Tabs.TabPane tab="Описание" key="description">
                             <Description description={good?.description ?? ''} loading={loading} />
                         </Tabs.TabPane>
@@ -119,7 +125,6 @@ const CommentList = ({ comments, loading }) => {
                             author={item.client.email}
                             content={item.text}
                             datetime={dayjs(item.date).format('DD/MM/YYYY HH:mm')}
-
                         />
                     </div>
                 )}
@@ -131,9 +136,13 @@ const CommentList = ({ comments, loading }) => {
     )
 
 }
-const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
+const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart, finalCost }) => {
     const client = useSelector(store => store.client)
     const isSale = !!good?.sale
+
+    // const additionPayments = useMemo(() => {
+    //     return good?.sizes.some(s => s.cost > 0) || good?.types.some(t => t.cost > 0)
+    // }, [good])
 
     return (
         !loading ? (
@@ -153,9 +162,9 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
                 </div>
                 <div style={styles.headerTitle}>
                     <div>
-                        <Typography.Text style={styles.price}>от</Typography.Text>
-                        <Typography.Text style={{ ...styles.price, ...styles.salePrice(isSale) }} type={isSale && 'secondary'} delete={isSale}>  {good?.price}  </Typography.Text>
-                        <Typography.Text style={styles.price}>{getPriceWithSale(good?.price, good?.sale)}</Typography.Text>
+                        {/* {additionPayments && <Typography.Text style={styles.price}>от</Typography.Text>} */}
+                        <Typography.Text style={{ ...styles.price, ...styles.salePrice(isSale) }} type={isSale && 'secondary'} delete={isSale}>  {finalCost}  </Typography.Text>
+                        <Typography.Text style={styles.price}>{getPriceWithSale(finalCost, good?.sale)}</Typography.Text>
                         <Typography.Text style={{ ...styles.price, marginLeft: 4 }}>&#8381;</Typography.Text>
                     </div>
 
@@ -228,11 +237,11 @@ const Characteristics = ({
     setSelectedType,
 }) => {
     const sizes = useMemo(() => {
-        return good?.sizes.filter(s => !!s !== false) ?? []
+        return good?.sizes.filter(s => !!s.value !== false) ?? []
     }, [good?.sizes])
 
     const types = useMemo(() => {
-        return good?.types.filter(t => !!t !== false) ?? []
+        return good?.types.filter(t => !!t.value !== false) ?? []
     }, [good?.types])
 
     return (
@@ -242,7 +251,11 @@ const Characteristics = ({
                 <Form.Item name="sizes" label="Размеры:">
                     <Radio.Group onChange={e => setSelectedSize(e.target.value)} value={selectedSize}>
                         <Space direction="vertical">
-                            {sizes.map(s => (<Radio key={s} value={s}>{s}</Radio>))}
+                            {sizes.map(s => (
+                                <Radio key={s.value} value={s.value}>
+                                    {s.value} <Typography.Text type="secondary">+{s.cost} &#8381;</Typography.Text>
+                                </Radio>
+                            ))}
                         </Space>
                     </Radio.Group>
                 </Form.Item>
@@ -257,7 +270,7 @@ const Characteristics = ({
                 <Form.Item name="types" label="Типы:">
                     <Radio.Group onChange={e => setSelectedType(e.target.value)} value={selectedType}>
                         <Space direction="vertical">
-                            {types.map(p => <Radio key={p} value={p}>{p}</Radio>)}
+                            {types.map(p => <Radio key={p.value} value={p.value}>{p.value}</Radio>)}
                         </Space>
                     </Radio.Group>
                 </Form.Item>

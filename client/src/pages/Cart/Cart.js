@@ -24,12 +24,28 @@ const Cart = () => {
     const [open, setOpen] = useState(false)
     const [progress, setProgress] = useState(0)
 
-    const cost = useMemo(() => {
-        let value = 0
+    const orderCost = useMemo(() => {
+        let cost = 0
         cartItems.forEach(i => {
-            value += i.amount * (i.good.sale ? (i.good.price * (100 - i.good.sale) / 100) : i.good.price)
+            let itemCost = i.good.price
+            i.characteristics.forEach(c => {
+                itemCost += (c?.cost || 0)
+            })
+
+            cost += (itemCost * (100 - (i.good.sale || 0)) / 100) * i.amount
         })
-        return value
+        return cost
+    }, [cartItems])
+
+    const expandedItems = useMemo(() => {
+        return cartItems.map(i => {
+            let itemCost = i.good.price
+            i.characteristics.forEach(c => {
+                itemCost += (c?.cost || 0)
+            })
+
+            return { ...i, totalCost: (itemCost * (100 - (i.good.sale || 0)) / 100) }
+        })
     }, [cartItems])
 
     const handleMakeOrder = async values => {
@@ -38,7 +54,7 @@ const Cart = () => {
         const variables = {
             date: new Date(),
             status: 'pending',
-            cost,
+            cost: orderCost,
             items,
             client: clientId,
             ...values
@@ -67,7 +83,7 @@ const Cart = () => {
                     </Button>
                 </div>
                 <Modal width="70%" cancelText="Назад" okButtonProps={{ style: { display: 'none' } }} onOk={() => {}}  bodyStyle={{ minHeight: '400px' }} title={<OrderTitle progress={progress} />} visible={open} onCancel={() => setOpen(false)}>
-                    <OrderContainer items={cartItems} cost={cost} setProgress={setProgress} omMakeOrder={handleMakeOrder} />
+                    <OrderContainer items={expandedItems} cost={orderCost} setProgress={setProgress} omMakeOrder={handleMakeOrder} />
                 </Modal>
             </>
         )

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom"
 import axios from 'axios'
 
-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload } from 'antd'
+import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload, Row, Col } from 'antd'
 import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
 import { useConfig } from '../../hooks'
@@ -57,14 +57,14 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             cancelText: 'Назад',
             confirmLoading: deleteLoading,
             onOk: handleDeleteConfirm,
-        });
+        })
     }
 
     const onChange = async ({ file, fileList }) => {
         let images = []
 
         if (file.status === 'removed') {
-            let imageRef = await storage.refFromURL(file.url);
+            let imageRef = await storage.refFromURL(file.url)
             await imageRef.delete().then(() => {
                 setFileArray(fileList)
             }).catch(err => console.log(err))
@@ -117,12 +117,8 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                 <Typography.Title level={4}>Краткое описание:</Typography.Title>
                 <Form.Item
                     name='subDescription'
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Введите краткое описание',
-                        },
-                    ]}>
+                    rules={[ { required: true, message: 'Введите краткое описание' } ]}
+                >
                     <Input.TextArea rows={4} style={styles.input} bordered={false} placeholder='Краткое описание услуги/товара' />
                 </Form.Item>
                 <Typography.Title level={4}>Описание:</Typography.Title>
@@ -145,8 +141,9 @@ const Characteristics = ({ good, setFieldsValue }) => {
     const [sizeVariant, setSizeVariant] = useState(good?.size ? 'single' : !!good?.sizes.length ? 'multi' : null)
     const [typeVariant, setTypeVariant] = useState(good?.type ? 'single' : !!good?.types.length ? 'multi' : null)
 
-    const [sizesCounter, setSizesCounter] = useState(good?.sizes.length ?? 2)
-    const [typesCounter, setTypesCounter] = useState(good?.types.length ?? 2)
+    console.log(good)
+    const [sizesCounter, setSizesCounter] = useState(good?.sizes.length > 1 ? good?.sizes.length : 2)
+    const [typesCounter, setTypesCounter] = useState(good?.types.length > 1 ? good?.types.length : 2)
 
     const handleChangeSizeVariant = e => {
         const variant = e.target.value
@@ -157,6 +154,11 @@ const Characteristics = ({ good, setFieldsValue }) => {
             setFieldsValue({ 'sizes-3': null })
             setFieldsValue({ 'sizes-4': null })
 
+            setFieldsValue({ 'sizes-cost-0': null })
+            setFieldsValue({ 'sizes-cost-1': null })
+            setFieldsValue({ 'sizes-cost-2': null })
+            setFieldsValue({ 'sizes-cost-3': null })
+            setFieldsValue({ 'sizes-cost-4': null })
         }
         else if (variant === 'multi') {
             setFieldsValue({ size: null })
@@ -174,6 +176,11 @@ const Characteristics = ({ good, setFieldsValue }) => {
             setFieldsValue({ 'types-3': null })
             setFieldsValue({ 'types-4': null })
 
+            setFieldsValue({ 'types-cost-0': null })
+            setFieldsValue({ 'types-cost-1': null })
+            setFieldsValue({ 'types-cost-2': null })
+            setFieldsValue({ 'types-cost-3': null })
+            setFieldsValue({ 'types-cost-4': null })
         }
         else if (variant === 'multi') {
             setFieldsValue({ type: null })
@@ -198,9 +205,26 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций размера товара</Typography.Paragraph>
                         {Array.from(Array(sizesCounter).keys()).map((_, id) => (
-                            <Form.Item key={`sizes-${good?.sizes[id] ?? 's'}-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
-                                <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
-                            </Form.Item>
+                            <Row gutter={[16, 16]} key={`sizes-${id}`}>
+                                <Col xs={8}>
+                                    <Form.Item
+                                        name={`sizes-${id}`}
+                                        initialValue={good?.sizes[id]?.value}
+                                        shouldUpdate
+                                    >
+                                        <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={4}>
+                                    <Form.Item
+                                        name={`sizes-cost-${id}`}
+                                        initialValue={good?.sizes[id].cost}
+                                        shouldUpdate
+                                    >
+                                        <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
+                                    </Form.Item>                                
+                                </Col>
+                            </Row>
                         ))
                         }
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -224,9 +248,26 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций типа товара</Typography.Paragraph>
                         {Array.from(Array(typesCounter).keys()).map((_, id) => (
-                            <Form.Item key={`types-${good?.types[id] ?? 't'}-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
-                                <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
-                            </Form.Item>
+                            <Row gutter={[16, 16]} key={`types-${id}`}>
+                                <Col xs={8}>
+                                    <Form.Item
+                                        name={`types-${id}`}
+                                        initialValue={good?.type[id]?.value}
+                                        shouldUpdate
+                                    >
+                                        <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={4}>
+                                    <Form.Item
+                                        name={`types-cost-${id}`}
+                                        initialValue={good?.type[id].cost}
+                                        shouldUpdate
+                                    >
+                                        <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
+                                    </Form.Item>                                
+                                </Col>
+                            </Row>
                         ))
                         }
 

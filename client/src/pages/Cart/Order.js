@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer } from 'react'
+import { useEffect, useState, useReducer, useMemo } from 'react'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import axios from 'axios'
@@ -43,6 +43,10 @@ const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY)
 const OrderContainer = ({ items = [], cost = 0, setProgress, omMakeOrder }) => {
     const [state, dispatch] = useReducer(reducer, initialState)
     const [clientSecret, setClientSecret] = useState("")
+
+    const orderCost = useMemo(() => {
+
+    }, [])
 
     useEffect(() => {
         const getSecret = async () => {
@@ -138,8 +142,11 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
                                 description={characteristicsToString(item.characteristics?.filter(c => !!c.value))} 
                                 avatar={<Avatar src={item.good.images[0]?.url ?? fallback} />} 
                             />
+                            <div>
+                                <Typography.Text type="secondary">{item.amount * item.totalCost} &#8381;</Typography.Text>
+                            </div>
                         </List.Item>
-                        )}
+                    )}
                 />
             </div>
              <Typography.Text strong>Сумма: {cost} руб.</Typography.Text>
@@ -271,4 +278,8 @@ const styles = {
     input: {
         marginBottom: 12, 
     }
+}
+
+const getPriceWithSale = (price, sale) => {
+    return sale ? price * (100 - sale) / 100 : ''
 }

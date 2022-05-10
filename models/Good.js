@@ -30,9 +30,9 @@ const GoodSchema = new mongoose.Schema({
     }],
     productionTime: String,
     size: String,
-    sizes: [String],
+    sizes: [{ value: String, cost: Number }],
     type: String,
-    types: [String],
+    types: [{ value: String, cost: Number }],
     sale: Number,
     available: {
         type: Boolean,

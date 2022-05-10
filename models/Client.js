@@ -27,6 +27,7 @@ const ClientSchema = new mongoose.Schema({
         characteristics: [{
             title: String,
             value: String,
+            cost: Number,
         }],
         good: { type: mongoose.Schema.Types.ObjectId, ref: "Good" }
     }],

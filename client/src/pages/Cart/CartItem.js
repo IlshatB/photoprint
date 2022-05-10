@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Card, Typography, Descriptions, Image } from 'antd'
@@ -18,6 +19,15 @@ const CartItem = ({ item, onAddItem, onRemoveItem }) => {
         onAddItem()
     }
 
+    const totalCost = useMemo(() => {
+        let total = item?.good.price
+        item.characteristics.forEach(c => {
+            total += (c?.cost || 0)
+        })
+
+        return total
+    }, [item])
+
     return (
         <Link to={`/${item?.good.category}/${item?.good._id}`}>
             <Card
@@ -34,7 +44,7 @@ const CartItem = ({ item, onAddItem, onRemoveItem }) => {
             >
                 <Card.Meta
                     title={item?.good.name}
-                    description={`${getPriceWithSale(item?.good.price, item?.good.sale)} руб`}
+                    description={`${getPriceWithSale(totalCost, item?.good.sale)} руб.`}
                 />
                 {!!item?.characteristics.length && (
                     <Descriptions column={1} size="small" style={{ marginTop: 16 }}>

@@ -46,34 +46,45 @@ const GoodFormContainer = ({ edit = false }) => {
         const sizes3 = values['sizes-3']
         const sizes4 = values['sizes-4']
 
+        const sizesCost0 = values['sizes-cost-0'] || 0
+        const sizesCost1 = values['sizes-cost-1'] || 0
+        const sizesCost2 = values['sizes-cost-2'] || 0
+        const sizesCost3 = values['sizes-cost-3'] || 0
+        const sizesCost4 = values['sizes-cost-4'] || 0
+
         const types0 = values['types-0']
         const types1 = values['types-1']
         const types2 = values['types-2']
         const types3 = values['types-3']
         const types4 = values['types-4']
 
-        
+        const typesCost0 = values['types-cost-0'] || 0
+        const typesCost1 = values['types-cost-1'] || 0
+        const typesCost2 = values['types-cost-2'] || 0
+        const typesCost3 = values['types-cost-3'] || 0
+        const typesCost4 = values['types-cost-4'] || 0
+
         const variables = {
             ...values, 
             ...(size && { size, sizes: [] }),
             ...(type && { type, types: [] }),
             ...(sizes0 && {
                 sizes: [
-                    sizes0,
-                    sizes1,
-                    sizes2,
-                    sizes3,
-                    sizes4,
+                    { value: sizes0, cost: sizesCost0 },
+                    { value: sizes1, cost: sizesCost1 },
+                    { value: sizes2, cost: sizesCost2 },
+                    { value: sizes3, cost: sizesCost3 },
+                    { value: sizes4, cost: sizesCost4 },
                 ].filter(s => !!s !== false),
                 size: null,
             }),
             ...(types0 && {
                 types: [
-                    types0,
-                    types1,
-                    types2,
-                    types3,
-                    types4,
+                    { value: types0, cost: typesCost0 },
+                    { value: types1, cost: typesCost1 },
+                    { value: types2, cost: typesCost2 },
+                    { value: types3, cost: typesCost3 },
+                    { value: types4, cost: typesCost4 },
                 ].filter(s => !!s !== false),
                 type: null,
             }),
@@ -101,11 +112,23 @@ const GoodFormContainer = ({ edit = false }) => {
         const sizes3 = values['sizes-3']
         const sizes4 = values['sizes-4']
 
+        const sizesCost0 = values['sizes-cost-0'] || 0
+        const sizesCost1 = values['sizes-cost-1'] || 0
+        const sizesCost2 = values['sizes-cost-2'] || 0
+        const sizesCost3 = values['sizes-cost-3'] || 0
+        const sizesCost4 = values['sizes-cost-4'] || 0
+
         const types0 = values['types-0']
         const types1 = values['types-1']
         const types2 = values['types-2']
         const types3 = values['types-3']
         const types4 = values['types-4']
+
+        const typesCost0 = values['types-cost-0'] || 0
+        const typesCost1 = values['types-cost-1'] || 0
+        const typesCost2 = values['types-cost-2'] || 0
+        const typesCost3 = values['types-cost-3'] || 0
+        const typesCost4 = values['types-cost-4'] || 0
 
         const variables = {
             name,
@@ -120,22 +143,22 @@ const GoodFormContainer = ({ edit = false }) => {
             ...(type && { type, types: [] }),
             ...(sizes0 && {
                 sizes: [
-                    sizes0,
-                    sizes1,
-                    sizes2,
-                    sizes3,
-                    sizes4,
-                ].filter(s => !!s !== false),
+                    { value: sizes0, cost: sizesCost0 },
+                    { value: sizes1, cost: sizesCost1 },
+                    { value: sizes2, cost: sizesCost2 },
+                    { value: sizes3, cost: sizesCost3 },
+                    { value: sizes4, cost: sizesCost4 },
+                ].filter(s => !!s.value !== false),
                 size: null,
             }),
             ...(types0 && {
                 types: [
-                    types0,
-                    types1,
-                    types2,
-                    types3,
-                    types4,
-                ].filter(s => !!s !== false),
+                    { value: types0, cost: typesCost0 },
+                    { value: types1, cost: typesCost1 },
+                    { value: types2, cost: typesCost2 },
+                    { value: types3, cost: typesCost3 },
+                    { value: types4, cost: typesCost4 },
+                ].filter(t => !!t.value !== false),
                 type: null,
             }),
         }

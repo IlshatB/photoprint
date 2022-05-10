@@ -23,12 +23,28 @@ const CartDrawer = ({ open, onClose }) => {
 
     const [showChild, setShowChild] = useState(false)
 
-    const cost = useMemo(() => {
-        let value = 0
+    const orderCost = useMemo(() => {
+        let cost = 0
         cartItems.forEach(i => {
-            value += i.amount * (i.good?.sale ? (i.good?.price * (100 - i.good?.sale) / 100) : i.good?.price)
+            let itemCost = i.good.price
+            i.characteristics.forEach(c => {
+                itemCost += (c?.cost || 0)
+            })
+
+            cost += (itemCost * (100 - (i.good.sale || 0)) / 100) * i.amount
         })
-        return value
+        return cost
+    }, [cartItems])
+
+    const expandedItems = useMemo(() => {
+        return cartItems.map(i => {
+            let itemCost = i.good.price
+            i.characteristics.forEach(c => {
+                itemCost += (c?.cost || 0)
+            })
+
+            return { ...i, totalCost: (itemCost * (100 - (i.good.sale || 0)) / 100) }
+        })
     }, [cartItems])
 
     const handleMakeOrder = async values => {
@@ -37,7 +53,7 @@ const CartDrawer = ({ open, onClose }) => {
         const variables = {
             date: new Date(),
             status: 'pending',
-            cost,
+            cost: orderCost,
             items,
             client: clientId,
             ...values
@@ -65,7 +81,7 @@ const CartDrawer = ({ open, onClose }) => {
                                 Заказать
                             </Button>
                         </div>
-                        <Order items={cartItems} visible={showChild} onClose={() => setShowChild(false)} cost={cost} omMakeOrder={handleMakeOrder} />
+                        <Order items={expandedItems} visible={showChild} onClose={() => setShowChild(false)} cost={orderCost} omMakeOrder={handleMakeOrder} />
                     </>
                 )
                 : (
