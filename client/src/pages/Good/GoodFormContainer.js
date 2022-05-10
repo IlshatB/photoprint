@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 import { withLayout } from '../../hocs'
-import { getCategoryTitle, categoriesList } from '../../helpers'
+import { categories, categoriesList } from '../../helpers'
 import NotFound from '../../components/NotFound/NotFound'
 
 import GoodForm from './GoodForm'
@@ -23,6 +23,7 @@ const GoodFormContainer = ({ edit = false }) => {
             try {
                 const { data } = await axios.get(`/api/goods/fetch/good/${goodId}`, { headers: { "Content-Type": "application/json" } })
                 setGood(data.good)
+
                 setTimeout(() => setLoading(false), 500)
             } catch (e) {
                 setError(e.response.data)
@@ -129,7 +130,7 @@ const GoodFormContainer = ({ edit = false }) => {
         return [
             { value: 'Главная', url: '/home' },
             ...(edit ? [
-                { value: getCategoryTitle(category), url: `/${category}` },
+                { value: categories[`${category}`], url: `/${category}` },
                 { value: name, url: `/${category}/${id}` },
                 { value: 'Редактирование', url: '' },
             ] : [

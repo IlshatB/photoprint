@@ -23,15 +23,11 @@ const contentStyle = {
     justifyContent: 'center',
     width: '100%',
     height: '100%',
-    alignItems: 'center',
   },
   gridCellStyle: {
     width: '50%',
     minWidth: '120px',
     display: 'flex',
-  },
-  heading: {
-    // color: '#fff',
   },
 };
 
@@ -91,10 +87,10 @@ const Main = () => {
                     <Row style={{ width: '100%', height: '100%' }}>
                       <Col xs={0} sm={12} md={12} lg={14} xl={14}>
                         <div style={contentStyle.saleContainer}>
-                          <Typography.Title level={4} type="secondary" style={contentStyle.heading}>
+                          <Typography.Title level={4} type="secondary">
                             {good.name}
                           </Typography.Title>
-                          <Typography.Title level={3} type="secondary" style={contentStyle.heading}>
+                          <Typography.Title level={3} type="secondary">
                             Со скидкой {good.sale}%
                           </Typography.Title>
                           <Link to={`/${good.category}/${good._id}`}>

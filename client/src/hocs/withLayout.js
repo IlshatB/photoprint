@@ -34,8 +34,8 @@ const withLayout = Component => ({ title = '', paths = [],  ...rest }) => {
                         {paths.length > 0 && (
                             <>
                                 <Breadcrumb>
-                                    {paths.map(({ value, url }) => (
-                                        <Breadcrumb.Item key={value} style={{ ...(value === 'loading' && { visibility: 'hidden' })}}>
+                                    {paths.map(({ value, url }, id) => (
+                                        <Breadcrumb.Item key={`${url}-${id}`} style={{ ...(value === 'loading' && { visibility: 'hidden' })}}>
                                             <Link to={url} component={Typography.Link} key={value}>
                                                 {value === 'loading' ? '' : value}
                                             </Link>
