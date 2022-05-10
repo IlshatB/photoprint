@@ -5,17 +5,21 @@ import { Card, Typography, Skeleton, Carousel, Image, Tabs, Button, Radio, Descr
 import { EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
-import fallback from '../../assets/images/fallback.png'
+import { useWindowWidth } from '../../hooks'
 import { getTimeByString, commentWord } from '../../helpers'
+
 import useCart from '../Cart/useCart'
 import CommentForm from '../Comments/CommentForm'
 
 import styles from './goodStyles'
 
+import fallback from '../../assets/images/fallback.png'
 
 const Good = ({ good, loading = false, refetch }) => {
-    const [form] = Form.useForm()
+    const { width } = useWindowWidth()
     const { cartItems, orders } = useSelector(store => store.client)
+
+    const [form] = Form.useForm()
     const { onAdd, onInsert } = useCart()
 
     const [selectedSize, setSelectedSize] = useState()
@@ -60,12 +64,22 @@ const Good = ({ good, loading = false, refetch }) => {
   
     return (
         <>
-            <Card title={<CardTitle good={good} loading={loading} disableAddToCart={disableAddToCart} handleAddToCart={handleAddToCart} />} bordered={false}>
+            <Card 
+                title={
+                    <CardTitle
+                        good={good}
+                        loading={loading}
+                        disableAddToCart={disableAddToCart}
+                        handleAddToCart={handleAddToCart}
+                    />
+                } 
+                bordered={false}
+            >
                 <Form
                     form={form}
                     name='good_view_form'
                 >
-                    <CardImages images={good?.images ?? []} loading={loading} />
+                    <CardImages images={good?.images ?? []} loading={loading} width={width} />
                     <Tabs defaultActiveKey="description" onChange={() => { }} type="card">
                         <Tabs.TabPane tab="Описание" key="description">
                             <Description description={good?.description ?? ''} loading={loading} />
@@ -125,12 +139,11 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
         !loading ? (
             <div>
                 <div style={styles.headerTitle}>
-                    <Typography.Title level={3}>{good?.name}</Typography.Title>
+                    <Typography.Title level={3} style={{ whiteSpace: 'break-spaces'}}>{good?.name}</Typography.Title>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div>
                             <Button type="primary" htmlType="submit" disabled={disableAddToCart} onClick={handleAddToCart}>В корзину</Button>
                             {client.isAdmin && (
-
                                 <Link to="edit" style={{ marginLeft: 16 }}>
                                     <EditOutlined />
                                 </Link>
@@ -147,7 +160,7 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
                     </div>
 
                     {good?.productionTime && (
-                        <Typography.Text style={{ fontSize: '0.9em' }} type="secondary">
+                        <Typography.Text style={{ fontSize: '0.9em', whiteSpace: 'break-spaces' }}  type="secondary">
                             {`Время изготовления: ${getTimeByString(good?.productionTime)}`}
                         </Typography.Text>
                     )}
@@ -163,13 +176,13 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart }) => {
     )
 }
 
-const CardImages = ({ images, loading }) => {
+const CardImages = ({ images, loading, width }) => {
     return !loading ? (
         images?.length > 0 ? (
             <Carousel autoplay effect="fade">
                 {images.map((image, id) => (
                     <div key={`image-${id + 1}`}>
-                        <div style={styles.imageContent}>
+                        <div style={styles.imageContent(!!(width < 451))}>
                             <Image height='100%' alt={id} src={image.url} preview={false} />
                         </div>
                     </div>

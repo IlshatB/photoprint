@@ -3,6 +3,7 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        flexWrap: 'wrap',
     },
     price: {
         color: '#1890ff',
@@ -11,13 +12,13 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',   
     },
-    imageContent:{
-        height: '300px',
+    imageContent: isSmallScreen => ({
+        height: isSmallScreen ? '200px' :'300px',
         color: '#fff',
         textAlign: 'center',
         backgroundColor: '#F5F5F5',
         backgroundSize: 'cover',
-    },
+    }),
     salePrice: sale => ({
         ...(sale && { color: '#bfbfbf' }),
     }),
