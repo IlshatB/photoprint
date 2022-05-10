@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
+import axios from 'axios'
+
 import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload } from 'antd'
 import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
 
-
+import { useConfig } from '../../hooks'
 import { categoriesList, storage, getNowDateString } from '../../helpers'
 
 const styles = {
@@ -19,9 +21,13 @@ const styles = {
 }
 
 const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelete }) => {
-    const [fileArray, setFileArray] = useState(good?.images)
-    const [form] = Form.useForm()
     const navigate = useNavigate()
+    const { goodId } = useParams()
+
+    const [fileArray, setFileArray] = useState(good?.images)
+    const config = useConfig()
+
+    const [form] = Form.useForm()
     const { setFieldsValue } = form
 
     const initialValues = {
@@ -54,13 +60,16 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
         });
     }
 
-    const onChange = async ({
-        file, fileList }) => {
+    const onChange = async ({ file, fileList }) => {
+        let images = []
+
         if (file.status === 'removed') {
             let imageRef = await storage.refFromURL(file.url);
             await imageRef.delete().then(() => {
                 setFileArray(fileList)
             }).catch(err => console.log(err))
+
+            images = good?.images.filter(i => i.name === file.name)
         }
         else {
             const fileName = getNowDateString() + file.name
@@ -76,8 +85,15 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             fileList.pop()
             fileList.push(firebaseInfo)
             setFileArray(fileList)
+            images = [ ...good?.images, firebaseInfo ]
         }
-    };
+
+        try {
+            await axios.patch(`/api/goods/update/images/${goodId}`, { images }, config)
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     return (
         <Form
@@ -182,7 +198,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций размера товара</Typography.Paragraph>
                         {Array.from(Array(sizesCounter).keys()).map((_, id) => (
-                            <Form.Item key={`sizes-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
+                            <Form.Item key={`sizes-${good?.sizes[id] ?? 's'}-${id}`} name={`sizes-${id}`} initialValue={good?.sizes[id]} shouldUpdate>
                                 <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
                             </Form.Item>
                         ))
@@ -208,7 +224,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций типа товара</Typography.Paragraph>
                         {Array.from(Array(typesCounter).keys()).map((_, id) => (
-                            <Form.Item key={`types-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
+                            <Form.Item key={`types-${good?.types[id] ?? 't'}-${id}`} name={`types-${id}`} initialValue={good?.types[id]} shouldUpdate>
                                 <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
                             </Form.Item>
                         ))
@@ -250,7 +266,7 @@ const CardTitle = ({ form }) => {
                 <InputNumber min={1} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder='Цена' addonAfter=" руб." />
             </Form.Item>
             <Form.Item name="sale" label="Скидка" style={{ marginTop: 16 }}>
-                <InputNumber min={1} max={100} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder="Скидка в %" />
+                <InputNumber min={1} max={100} style={{ ...styles.input, width: '100%' }} bordered={false} placeholder="Скидка в %" addonAfter="%" />
             </Form.Item>
             <Form.Item
                 name="productionTime"

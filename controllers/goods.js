@@ -1,7 +1,15 @@
+const jwt_decode = require('jwt-decode')
 const Good = require('../models/Good')
 const Client = require('../models/Client')
 
 exports.createGood = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { isAdmin } = jwt_decode(token)
+
+    if (!isAdmin) {
+        return res.status(401).send('Вы не обладаете правами администратора')
+    }
+    
     const data = req.body
     try {
         const good = await Good.create({ ...data })
@@ -15,6 +23,13 @@ exports.createGood = async (req, res, next) => {
 }
 
 exports.deleteGood = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { isAdmin } = jwt_decode(token)
+
+    if (!isAdmin) {
+        return res.status(401).send('Вы не обладаете правами администратора')
+    }
+
     const id = req.params.id
     try {
         const good = await Good.findById(id)
@@ -29,6 +44,13 @@ exports.deleteGood = async (req, res, next) => {
 }
 
 exports.updateGood = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { isAdmin } = jwt_decode(token)
+
+    if (!isAdmin) {
+        return res.status(401).send('Вы не обладаете правами администратора')
+    }
+
     const { id } = req.params
     const data = req.body
 
@@ -91,7 +113,7 @@ exports.fetchGoods = async (req, res, next) => {
 
 exports.fetchSales = async (req, res, next) => {
     try {
-        const allSales = await Good.find({ sale: { $exists: true } })
+        const allSales = await Good.find({ sale: { $exists: true } }).limit(5)
         res.status(200).json({
             success: true,
             allSales
@@ -122,6 +144,28 @@ exports.saveCart = async (req, res, next) => {
                 cartItems: client.cart
             }
         })
+    } catch (e) {
+        next(e)
+    }
+}
+
+exports.updateImages = async (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1]
+    const { isAdmin } = jwt_decode(token)
+
+    if (!isAdmin) {
+        return res.status(401).send('Вы не обладаете правами администратора')
+    }
+
+    const { id } = req.params
+    const { images } = req.body
+
+    try {
+        const good = await Good.findById(id)
+        good.images = images
+        await good.save()
+
+        res.status(200).json({ success: true })
     } catch (e) {
         next(e)
     }

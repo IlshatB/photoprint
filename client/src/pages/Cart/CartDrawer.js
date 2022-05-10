@@ -6,8 +6,8 @@ import axios from 'axios'
 import { Row, Col, Typography, Drawer, Button, Progress } from 'antd'
 import { ShoppingCartOutlined } from '@ant-design/icons'
 
-import { useCurrentClient } from '../../hooks'
 import { loginClient } from '../../store/client/actions'
+import { useCurrentClient, useConfig } from '../../hooks'
 
 import OrderContainer from './Order'
 import CartItem from './CartItem'
@@ -18,27 +18,21 @@ const CartDrawer = ({ open, onClose }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { onAdd, onRemove } = useCart()
+    const config = useConfig()
     const { token } = useCurrentClient()
 
     const [showChild, setShowChild] = useState(false)
 
-    const config = useMemo(() => ({
-        headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    }), [token])
-
     const cost = useMemo(() => {
         let value = 0
         cartItems.forEach(i => {
-            value += i.amount * (i.good.sale ? (i.good.price * (100 - i.good.sale) / 100) : i.good.price)
+            value += i.amount * (i.good?.sale ? (i.good?.price * (100 - i.good?.sale) / 100) : i.good?.price)
         })
         return value
     }, [cartItems])
 
     const handleMakeOrder = async values => {
-        const items = cartItems.map(i => ({ ...i, good: i.good._id }))
+        const items = cartItems.map(i => ({ ...i, good: i.good?._id }))
         
         const variables = {
             date: new Date(),

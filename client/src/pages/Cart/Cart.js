@@ -6,8 +6,8 @@ import axios from 'axios'
 import { Row, Col, Typography, Button, Modal, Progress } from 'antd'
 import { ShoppingCartOutlined } from '@ant-design/icons'
 
-import { useCurrentClient } from '../../hooks'
 import { loginClient } from '../../store/client/actions'
+import { useConfig, useCurrentClient } from '../../hooks'
 
 import OrderContainer from './Order'
 import CartItem from './CartItem'
@@ -18,17 +18,11 @@ const Cart = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { onAdd, onRemove } = useCart()
+    const config = useConfig()
     const { token } = useCurrentClient()
 
     const [open, setOpen] = useState(false)
     const [progress, setProgress] = useState(0)
-
-    const config = useMemo(() => ({
-        headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    }), [token])
 
     const cost = useMemo(() => {
         let value = 0

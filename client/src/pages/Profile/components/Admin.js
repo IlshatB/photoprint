@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -6,18 +6,11 @@ import dayjs from 'dayjs'
 import { List, Typography, Descriptions, Steps, Modal, Button } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 
-import { useCurrentClient } from '../../../hooks'
+import { useConfig } from '../../../hooks'
 
 const Admin = () => {
-    const { token } = useCurrentClient()
+    const config = useConfig()
     const [orders, setOrders] = useState([])
-
-    const config = useMemo(() => ({
-        headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    }), [token])
 
     const fetchOrders = useCallback(async () => {
         const { data } = await axios.get('/api/orders/fetch', config)

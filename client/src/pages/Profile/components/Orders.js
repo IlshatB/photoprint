@@ -5,11 +5,12 @@ import { Typography, Collapse, Steps, Descriptions, List, Modal, Button } from "
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import axios from 'axios'
 
-import { useCurrentClient } from '../../../hooks'
+import { useCurrentClient, useConfig } from '../../../hooks'
 import { loginClient } from '../../../store/client/actions'
 
 const Orders = ({ client }) => {
     const dispatch = useDispatch()
+    const config = useConfig()
     const { token } = useCurrentClient()
 
     const inProgressOrders = useMemo(() => {
@@ -19,13 +20,6 @@ const Orders = ({ client }) => {
     const doneOrders = useMemo(() => {
         return client.orders.filter(o => o.status === 'delivered')
     }, [client])
-
-    const config = useMemo(() => ({
-        headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    }), [token])
 
     const handleCancelConfirm = async id => {
         try {

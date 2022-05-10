@@ -82,18 +82,18 @@ const Main = () => {
         {
           sales.map(good => {
             return (
-              <div key={good._id} >
+              <div key={good?._id} >
                 <div style={contentStyle.mainContent}>
                     <Row style={{ width: '100%', height: '100%' }}>
                       <Col xs={0} sm={12} md={12} lg={14} xl={14}>
                         <div style={contentStyle.saleContainer}>
                           <Typography.Title level={4} type="secondary">
-                            {good.name}
+                            {good?.name}
                           </Typography.Title>
                           <Typography.Title level={3} type="secondary">
-                            Со скидкой {good.sale}%
+                            Со скидкой {good?.sale}%
                           </Typography.Title>
-                          <Link to={`/${good.category}/${good._id}`}>
+                          <Link to={`/${good?.category}/${good?._id}`}>
                             <Button type="primary" shape="round">Посмотреть</Button>
                           </Link>
                         </div>

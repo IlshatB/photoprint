@@ -1,20 +1,14 @@
-import { useMemo, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 
 import { fetchCart } from '../../store/client/actions'
-import { useCurrentClient } from '../../hooks'
+import { useCurrentClient, useConfig } from '../../hooks'
 
 const useCart = () => {
     const dispatch = useDispatch()    
+    const config = useConfig()
     const { token } = useCurrentClient()
-
-    const config = useMemo(() => ({
-        headers: { 
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-    }), [token])
 
     const handleInsert = useCallback(async ({ good, characteristics = [] }) => {
         try {

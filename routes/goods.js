@@ -9,6 +9,7 @@ const {
     fetchGoods,
     fetchSales,
     saveCart,
+    updateImages,
 } = require('../controllers/goods')
 
 router.route('/create').post(createGood)
@@ -18,5 +19,6 @@ router.route('/fetch/good/:id').get(fetchGood)
 router.route('/fetch/goodSale').get(fetchSales)
 router.route('/fetch/goods/:category&:limit').get(fetchGoods)
 router.route('/save/cart/:clientId').patch(saveCart)
+router.route('/update/images/:id').patch(updateImages)
 
 module.exports = router
