@@ -27,7 +27,7 @@ const styles = {
 const GoodItem = ({ good }) => {
     return (
         <Col xs={24} sm={24} md={12} lg={12} xl={8} style={styles.col}>
-            <Link to={`/photobooks/${good?._id}`} style={styles.linkWrapper}>
+            <Link to={good?._id} style={styles.linkWrapper}>
                 <Card
                     hoverable
                     cover={

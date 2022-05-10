@@ -37,7 +37,7 @@ const PageSideBar = () => {
         return amount
     }, [cartItems])
 
-    const [collapsed, setCollapsed] = useState(false);
+    const [collapsed, setCollapsed] = useState(false)
 
     const handleCollapse = value => {
         setCollapsed(value)
