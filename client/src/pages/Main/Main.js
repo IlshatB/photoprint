@@ -33,7 +33,7 @@ const contentStyle = {
 
 const Main = () => {
   const [sales, setSales] = useState([])
-
+  
   const fetchData = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/goods/fetch/goodSale', { headers: { "Content-Type": "application/json" } })

@@ -114,7 +114,7 @@ exports.fetchGoods = async (req, res, next) => {
 
 exports.fetchSales = async (req, res, next) => {
     try {
-        const allSales = await Good.find({ sale: { $exists: true } }).limit(5)
+        const allSales = await Good.find({ sale: { $exists: true, $ne: null } }).limit(5)
         res.status(200).json({
             success: true,
             allSales
