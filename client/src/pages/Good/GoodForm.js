@@ -145,7 +145,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
 
                 <div style={styles.buttons}>
                     <Button type="primary" htmlType='submit'>{edit ? 'Сохранить' : 'Создать'}</Button>
-                    <Button type="primary" danger onClick={handleDelete} >Удалить</Button>
+                    {edit && <Button type="primary" danger onClick={handleDelete} >Удалить</Button>}
                 </div>
             </Card>
         </Form>
