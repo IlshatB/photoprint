@@ -15,7 +15,7 @@ const GoodFormContainer = ({ edit = false }) => {
     const { goodId } = useParams()
 
     const config = useConfig()
-
+    console.log(config)
     const [good, setGood] = useState()
     const [loading, setLoading] = useState(false)
     const [deleteLoading, setDeleteLoading] = useState(false)
@@ -177,8 +177,8 @@ const GoodFormContainer = ({ edit = false }) => {
     const handleDelete = async () => {
         setDeleteLoading(true)
         try {
-            const { data } = await axios.patch(`/api/goods/delete/good/${goodId}`, config)
-            const { success } = data
+            const { data } = await axios.patch(`/api/goods/delete/good/${goodId}`, {}, config)
+            const { success } = await data
             setTimeout(() => {
                 setDeleteLoading(false)
                 return success ? Promise.resolve() : Promise.reject()
