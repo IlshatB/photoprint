@@ -44,7 +44,7 @@ const PrintContainer = () => {
     const PrintWithLayout = withLayout(Print)
     return (
         <PrintWithLayout
-          title="Фотосувениры"
+          title="Интерьерная печать"
           paths={paths}
           goods={goods}
           error={error} 
