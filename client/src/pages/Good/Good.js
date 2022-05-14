@@ -51,12 +51,6 @@ const Good = ({ good, loading = false, refetch }) => {
             ],
             attachments,
         }
-        console.log('MAIN')
-        console.log(variables.attachments.map(a => a.name).sort().join(' '))
-        console.log('EXTRA')
-        cartItems.forEach(i => {
-            console.log(i.attachments.map(a => a.name).sort().join(' '))
-        })
 
         const found = cartItems.find(
             i => i.good._id === good?._id 

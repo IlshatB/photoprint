@@ -67,7 +67,6 @@ const AttachmentsModal = ({ good, open, setOpen, onOk }) => {
     }
 
     const handleSubmit = () => {
-        console.log(attachments)
         onOk(attachments)
     }
 

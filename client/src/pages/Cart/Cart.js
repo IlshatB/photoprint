@@ -20,7 +20,7 @@ const Cart = () => {
     const { onAdd, onRemove } = useCart()
     const config = useConfig()
     const { token } = useCurrentClient()
-    console.log(cartItems)
+
     const [open, setOpen] = useState(false)
     const [progress, setProgress] = useState(0)
 

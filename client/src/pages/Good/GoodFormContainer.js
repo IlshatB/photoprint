@@ -26,7 +26,7 @@ const GoodFormContainer = ({ edit = false }) => {
             setLoading(true)
             try {
                 const { data } = await axios.get(`/api/goods/fetch/good/${goodId}`, config)
-                setGood(data.good)
+                setGood(data?.good)
 
                 setTimeout(() => setLoading(false), 500)
             } catch (e) {

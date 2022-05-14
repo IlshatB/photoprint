@@ -44,8 +44,8 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
         productionTime: good?.productionTime,
         allowAttach: good?.allowAttach ?? false,
         multiAttach: good?.multiAttach ?? false,
-        checkedAllow: good?.allowAttach ?? false,
-        checkedMulti: good?.multiAttach ?? false,
+        checkedallow: good?.allowAttach ?? false,
+        checkedmulti: good?.multiAttach ?? false,
     }
 
     const handleDeleteConfirm = () => {
@@ -153,11 +153,14 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
 }
 
 const Characteristics = ({ good, setFieldsValue }) => {
-    const [sizeVariant, setSizeVariant] = useState(good?.size ? 'single' : !!good?.sizes.length ? 'multi' : null)
-    const [typeVariant, setTypeVariant] = useState(good?.type ? 'single' : !!good?.types.length ? 'multi' : null)
+    const [sizeVariant, setSizeVariant] = useState(good?.size ? 'single' : !!good?.sizes?.length ? 'multi' : null)
+    const [typeVariant, setTypeVariant] = useState(good?.type ? 'single' : !!good?.types?.length ? 'multi' : null)
 
-    const [sizesCounter, setSizesCounter] = useState(good?.sizes.length > 1 ? good?.sizes.length : 2)
-    const [typesCounter, setTypesCounter] = useState(good?.types.length > 1 ? good?.types.length : 2)
+    const filteredSizesLength = good?.sizes?.filter(s => !!s?.value).length
+    const filteredTypesLength = good?.types?.filter(t => !!t?.value).length
+
+    const [sizesCounter, setSizesCounter] = useState(filteredSizesLength > 1 ? filteredSizesLength : 2)
+    const [typesCounter, setTypesCounter] = useState(filteredTypesLength > 1 ? filteredTypesLength : 2)
 
     const handleChangeSizeVariant = e => {
         const variant = e.target.value
@@ -218,28 +221,28 @@ const Characteristics = ({ good, setFieldsValue }) => {
                 ) : sizeVariant === 'multi' ? (
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций размера товара</Typography.Paragraph>
-                        {Array.from(Array(sizesCounter).keys()).map((_, id) => (
-                            <Row gutter={[16, 16]} key={`sizes-${id}`}>
-                                <Col xs={8}>
-                                    <Form.Item
-                                        name={`sizes-${id}`}
-                                        initialValue={good?.sizes[id]?.value}
-                                        shouldUpdate
-                                    >
-                                        <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
-                                    </Form.Item>
-                                </Col>
-                                <Col xs={4}>
-                                    <Form.Item
-                                        name={`sizes-cost-${id}`}
-                                        initialValue={good?.sizes[id]?.cost}
-                                        shouldUpdate
-                                    >
-                                        <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
-                                    </Form.Item>                                
-                                </Col>
-                            </Row>
-                        ))
+                            {Array.from(Array(sizesCounter).keys())?.map((el, id) => (
+                                <Row gutter={[16, 16]} key={`sizes-${id}`}>
+                                    <Col xs={8}>
+                                        <Form.Item
+                                            name={`sizes-${id}`}
+                                            initialValue={good?.sizes[id]?.value}
+                                            shouldUpdate
+                                        >
+                                            <Input style={styles.input} bordered={false} placeholder='Укажите размер' />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col xs={4}>
+                                        <Form.Item
+                                            name={`sizes-cost-${id}`}
+                                            initialValue={good?.sizes[id]?.cost}
+                                            shouldUpdate
+                                        >
+                                            <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
+                                        </Form.Item>                                
+                                    </Col>
+                                </Row>
+                            ))
                         }
                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Button shape="round" disabled={sizesCounter === 5} onClick={() => setSizesCounter(v => v + 1)} >Добавить</Button>
@@ -261,12 +264,12 @@ const Characteristics = ({ good, setFieldsValue }) => {
                 ) : typeVariant === 'multi' ? (
                     <>
                         <Typography.Paragraph style={{ marginTop: 16 }} type="warning">Укажите до 5 разных вариаций типа товара</Typography.Paragraph>
-                        {Array.from(Array(typesCounter).keys()).map((_, id) => (
+                        {Array.from(Array(typesCounter).keys())?.map((_, id) => (
                             <Row gutter={[16, 16]} key={`types-${id}`}>
                                 <Col xs={8}>
                                     <Form.Item
                                         name={`types-${id}`}
-                                        initialValue={good?.type[id]?.value}
+                                        initialValue={good?.types[id]?.value}
                                         shouldUpdate
                                     >
                                         <Input style={styles.input} bordered={false} placeholder='Укажите тип' />
@@ -275,7 +278,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
                                 <Col xs={4}>
                                     <Form.Item
                                         name={`types-cost-${id}`}
-                                        initialValue={good?.type[id]?.cost}
+                                        initialValue={good?.types[id]?.cost}
                                         shouldUpdate
                                     >
                                         <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
@@ -303,7 +306,7 @@ const CardTitle = ({ allowAttach, multiAttach, setAllowAttach, setMultiAttach })
             <Typography.Title level={4}>Категория:</Typography.Title>
             <Form.Item name="category" rules={[{ required: true, message: 'Выберите категорию' }]} >
                 <Select>
-                    {categoriesList.map(cat => (
+                    {categoriesList?.map(cat => (
                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
                             {cat.title}
                         </Select.Option>
@@ -329,7 +332,12 @@ const CardTitle = ({ allowAttach, multiAttach, setAllowAttach, setMultiAttach })
             </Form.Item>
             <Form.Item style={{ display: 'flex' }}>
                 <Space size="middle" wrap>
-                    <Form.Item valuePropName="checkedAllow" name="allowAttach" label="Позволить прикреплять файлы" shouldUpdate>
+                    <Form.Item 
+                        // valuePropName="checkedallow" 
+                        name="allowAttach" 
+                        label="Позволить прикреплять файлы" 
+                        shouldUpdate
+                    >
                         <Switch
                             checked={allowAttach}
                             onChange={setAllowAttach}
@@ -340,7 +348,7 @@ const CardTitle = ({ allowAttach, multiAttach, setAllowAttach, setMultiAttach })
                     {allowAttach && (
                         <Form.Item 
                             shouldUpdate
-                            valuePropName="checkedMulti" 
+                            // valuePropName="checkedmulti" 
                             name="multiAttach" 
                             label="Несколько файлов"
                         >
