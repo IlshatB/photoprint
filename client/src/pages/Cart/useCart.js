@@ -10,9 +10,9 @@ const useCart = () => {
     const config = useConfig()
     const { token } = useCurrentClient()
 
-    const handleInsert = useCallback(async ({ good, characteristics = [] }) => {
+    const handleInsert = useCallback(async ({ good, characteristics = [], attachments }) => {
         try {
-            await axios.put(`/api/cart/item/insert`, { good, characteristics }, config)
+            await axios.put(`/api/cart/item/insert`, { good, characteristics, attachments }, config)
             dispatch(fetchCart(token))
         } catch(e) {
             console.log(e)

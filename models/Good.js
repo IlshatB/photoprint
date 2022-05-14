@@ -39,6 +39,14 @@ const GoodSchema = new mongoose.Schema({
         default: true,
     },
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
+    allowAttach: {
+        type: Boolean,
+        default: false,
+    },
+    multiAttach: {
+        type: Boolean,
+        default: false,
+    },
 })
 
 module.exports = mongoose.model('Good', GoodSchema)

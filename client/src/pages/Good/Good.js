@@ -1,15 +1,17 @@
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import dayjs from 'dayjs'
+
 import { Card, Typography, Skeleton, Carousel, Image, Tabs, Button, Radio, Descriptions, Form, Space, List, Comment, Rate } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
-import dayjs from 'dayjs'
 
 import { useWindowWidth } from '../../hooks'
 import { getTimeByString, commentWord } from '../../helpers'
 
 import useCart from '../Cart/useCart'
 import CommentForm from '../Comments/CommentForm'
+import AttachmentsModal from './AttachmentsModal'
 
 import styles from './goodStyles'
 
@@ -25,6 +27,8 @@ const Good = ({ good, loading = false, refetch }) => {
     const [selectedSize, setSelectedSize] = useState()
     const [selectedType, setSelectedType] = useState()
 
+    const [open, setOpen] = useState(false)
+
     const sizes = useMemo(() => {
         return good?.sizes.filter(s => !!s.value !== false) ?? []
     }, [good?.sizes])
@@ -38,24 +42,34 @@ const Good = ({ good, loading = false, refetch }) => {
         return cost
     }, [good, sizes, types, selectedSize, selectedType])
 
-    const handleAddToCart = async () => {
+    const handleAddToCart = async (attachments = []) => {
         const variables = {
             good: good?._id,
             characteristics: [
                 { title: 'size', value: good?.size ?? selectedSize, cost: good?.sizes[good?.sizes.findIndex(s => s.value === selectedSize)]?.cost  },
                 { title: 'type', value: good?.type ?? selectedType, cost: good?.types[good?.types.findIndex(t => t.value === selectedSize)]?.cost  },
             ],
+            attachments,
         }
+        console.log('MAIN')
+        console.log(variables.attachments.map(a => a.name).sort().join(' '))
+        console.log('EXTRA')
+        cartItems.forEach(i => {
+            console.log(i.attachments.map(a => a.name).sort().join(' '))
+        })
 
-        const found = cartItems.find(i => i.good._id === good?._id && i.characteristics.every((el, id) => el.title === variables.characteristics[id].title && el.value === variables.characteristics[id].value))
+        const found = cartItems.find(
+            i => i.good._id === good?._id 
+                && i.characteristics.every((el, id) => el.title === variables.characteristics[id].title && el.value === variables.characteristics[id].value)
+                && (i.good?.allowAttach ? i.attachments.map(a => a.name).sort().join(' ') === variables.attachments.map(a => a.name).sort().join(' ') : true)
+        )
+        if (!!found) onAdd(found._id)
+        else onInsert(variables)
+    }
 
-        if (!!found) {
-            onAdd(found._id)
-        }
-        else {
-            onInsert(variables)
-        }
-
+    const handleClickAddToCart = () => {
+        if (good?.allowAttach) setOpen(true)
+        else handleAddToCart()
     }
 
     const showCommentsForm = useMemo(() => {
@@ -76,7 +90,7 @@ const Good = ({ good, loading = false, refetch }) => {
                         loading={loading}
                         finalCost={finalCost}
                         disableAddToCart={disableAddToCart}
-                        handleAddToCart={handleAddToCart}
+                        onAddToCart={handleClickAddToCart}
                     />
                 } 
                 bordered={false}
@@ -106,6 +120,7 @@ const Good = ({ good, loading = false, refetch }) => {
             </Card>
             {showCommentsForm && <CommentForm goodId={good?._id} refetch={refetch} />}
             {good?.comments.length === 0 ? [] : <CommentList comments={good?.comments} loading={loading} />}
+            <AttachmentsModal good={good} open={open} setOpen={setOpen} onOk={handleAddToCart} />
         </>
     )
 }
@@ -136,13 +151,9 @@ const CommentList = ({ comments, loading }) => {
     )
 
 }
-const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart, finalCost }) => {
+const CardTitle = ({ good, loading, disableAddToCart, onAddToCart, finalCost }) => {
     const client = useSelector(store => store.client)
     const isSale = !!good?.sale
-
-    // const additionPayments = useMemo(() => {
-    //     return good?.sizes.some(s => s.cost > 0) || good?.types.some(t => t.cost > 0)
-    // }, [good])
 
     return (
         !loading ? (
@@ -151,7 +162,7 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart, finalCost
                     <Typography.Title level={3} style={{ whiteSpace: 'break-spaces'}}>{good?.name}</Typography.Title>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div>
-                            <Button type="primary" htmlType="submit" disabled={disableAddToCart} onClick={handleAddToCart}>В корзину</Button>
+                            <Button type="primary" htmlType="submit" disabled={disableAddToCart} onClick={onAddToCart}>В корзину</Button>
                             {client.isAdmin && (
                                 <Link to="edit" style={{ marginLeft: 16 }}>
                                     <EditOutlined />
@@ -162,7 +173,6 @@ const CardTitle = ({ good, loading, disableAddToCart, handleAddToCart, finalCost
                 </div>
                 <div style={styles.headerTitle}>
                     <div>
-                        {/* {additionPayments && <Typography.Text style={styles.price}>от</Typography.Text>} */}
                         <Typography.Text style={{ ...styles.price, ...styles.salePrice(isSale) }} type={isSale && 'secondary'} delete={isSale}>  {finalCost}  </Typography.Text>
                         <Typography.Text style={styles.price}>{getPriceWithSale(finalCost, good?.sale)}</Typography.Text>
                         <Typography.Text style={{ ...styles.price, marginLeft: 4 }}>&#8381;</Typography.Text>
@@ -297,6 +307,7 @@ const isSubmitDisabled = (selectedSize, selectedType, sizes, types) => {
     if (types.length > 0 && !selectedType) {
         return true
     }
+
     return false
 }
 

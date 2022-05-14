@@ -1,5 +1,6 @@
-import  ShoppingCartProvider from './ShoppingCartProvider'
+import { CartContext, CartProvider } from './CartProvider'
 
 export {
-    ShoppingCartProvider,
+    CartContext,
+    CartProvider,
 }

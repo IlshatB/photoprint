@@ -5,14 +5,14 @@ import { Typography, Collapse, Steps, Descriptions, List, Modal, Button } from "
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 import axios from 'axios'
 
-import { useCurrentClient, useConfig } from '../../../hooks'
+import { useCurrentClient, useConfig, useWindowWidth } from '../../../hooks'
 import { loginClient } from '../../../store/client/actions'
 
 const Orders = ({ client }) => {
     const dispatch = useDispatch()
     const config = useConfig()
     const { token } = useCurrentClient()
-
+    
     const inProgressOrders = useMemo(() => {
         return client.orders.filter(o => o.status !== 'delivered' && o.status !== 'canceled')
     }, [client])
@@ -116,20 +116,33 @@ const Orders = ({ client }) => {
 }
 
 const Item = ({ item, done = false }) => {
+    const { width } = useWindowWidth()
+
     return (
         <List.Item style={{ width: '100%' }}>
-            <Descriptions column={1} size="small" bordered style={{ width: '100%' }} contentStyle={done && styles.done} labelStyle={done && styles.done}>
-                <Descriptions.Item label="Название">
+            <Descriptions layout={width < 430 ? 'vertical' : 'horizontal'} column={1} size="small" bordered style={{ width: '100%' }} contentStyle={done && styles.done} labelStyle={done && styles.done}>
+                <Descriptions.Item label="Название" labelStyle={{ minWidth: '150px' }}>
                     {item.good.name}
                 </Descriptions.Item>
                 <Descriptions.Item label="Количество" contentStyle={{ width: '100%' }}>
                     {item.amount}
                 </Descriptions.Item>
-                <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
-                    {item.characteristics.map(c => c?.value && (
-                        <p key={c?.title} style={{ ...(done && styles.done)}}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
-                    ))}
-                </Descriptions.Item>
+                {!!item?.characteristics.some(c => !!c.value) && (
+                    <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
+                        {item.characteristics.map(c => c?.value && (
+                            <p key={c?.title} style={{ ...(done && styles.done)}}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
+                        ))}
+                    </Descriptions.Item>
+                )}
+                {item?.attachments.length > 0 && (
+                    <Descriptions.Item label="Вложения" contentStyle={{ width: '100%' }}>
+                        {item.attachments.map((a, id) => (
+                            <p key={a.name}>
+                                <a href={a.url} target="_blank">{`Изображение №${id + 1}`}</a>
+                            </p>
+                        ))}
+                    </Descriptions.Item>
+                )}
             </Descriptions>
         </List.Item>
     )

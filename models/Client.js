@@ -24,6 +24,11 @@ const ClientSchema = new mongoose.Schema({
     },
     cart: [{ 
         amount: Number,
+        attachments: [{
+            name: String,
+            url: String,
+            thumbUrl: String,
+        }],
         characteristics: [{
             title: String,
             value: String,

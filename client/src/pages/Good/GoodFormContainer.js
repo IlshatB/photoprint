@@ -104,7 +104,7 @@ const GoodFormContainer = ({ edit = false }) => {
     }
 
     const handleSave = async values => {
-        const { name, description, subDescription, category, productionTime, price, sale, size, type } = values
+        const { name, description, subDescription, category, productionTime, price, sale, size, type, allowAttach, multiAttach } = values
 
         const sizes0 = values['sizes-0']
         const sizes1 = values['sizes-1']
@@ -138,6 +138,8 @@ const GoodFormContainer = ({ edit = false }) => {
             images: values.imgInfo?.fileList,
             productionTime,
             price,
+            allowAttach,
+            multiAttach,
             sale,
             ...(size && { size, sizes: [] }),
             ...(type && { type, types: [] }),

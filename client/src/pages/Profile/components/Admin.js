@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import { List, Typography, Descriptions, Steps, Modal, Button } from 'antd'
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 
-import { useConfig } from '../../../hooks'
+import { useConfig, useWindowWidth } from '../../../hooks'
 
 const Admin = () => {
     const config = useConfig()
@@ -103,20 +103,33 @@ const Order = ({ order, handleUpdateOrder, handleCancel }) => {
 }
 
 const Item = ({ item }) => {
+    const { width } = useWindowWidth()
+
     return (
         <List.Item style={{ width: '100%' }}>
-            <Descriptions column={1} size="small" bordered style={{ width: '100%' }}>
-                <Descriptions.Item label="Название">
+            <Descriptions layout={width < 430 ? 'vertical' : 'horizontal'} column={1} size="small" bordered style={{ width: '100%' }}>
+                <Descriptions.Item label="Название" labelStyle={{ minWidth: '150px' }}>
                     {item.good.name}
                 </Descriptions.Item>
                 <Descriptions.Item label="Количество" contentStyle={{ width: '100%' }}>
                     {item.amount}
                 </Descriptions.Item>
-                <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
-                    {item.characteristics.map(c => c?.value && (
-                        <p key={c?.title}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
-                    ))}
-                </Descriptions.Item>
+                {!!item?.characteristics.some(c => !!c.value) && (
+                    <Descriptions.Item label="Характеристики" contentStyle={{ width: '100%' }}>
+                        {item.characteristics.map(c => c?.value && (
+                            <p key={c?.title}>{`${getTitleDescription(c?.title)}: ${c?.value}`}</p>
+                        ))}
+                    </Descriptions.Item>
+                )}
+                {item?.attachments.length > 0 && (
+                    <Descriptions.Item label="Вложения" contentStyle={{ width: '100%' }}>
+                        {item.attachments.map((a, id) => (
+                            <p key={a.name}>
+                                <a href={a.url} target="_blank">{`Изображение №${id + 1}`}</a>
+                            </p>
+                        ))}
+                    </Descriptions.Item>
+                )}
             </Descriptions>
         </List.Item>
     )

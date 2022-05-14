@@ -1,12 +1,13 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import axios from 'axios'
 
 import { Row, Col, Typography, Drawer, Button, Progress } from 'antd'
-import { ShoppingCartOutlined } from '@ant-design/icons'
+import { ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons'
 
 import { loginClient } from '../../store/client/actions'
+import { CartContext } from '../../providers'
 import { useCurrentClient, useConfig } from '../../hooks'
 
 import OrderContainer from './Order'
@@ -20,6 +21,7 @@ const CartDrawer = ({ open, onClose }) => {
     const { onAdd, onRemove } = useCart()
     const config = useConfig()
     const { token } = useCurrentClient()
+    const { setLoading } = useContext(CartContext)
 
     const [showChild, setShowChild] = useState(false)
 
@@ -65,14 +67,32 @@ const CartDrawer = ({ open, onClose }) => {
     }
 
     return (
-        <Drawer title="Корзина" placement="right" onClose={onClose} visible={open}>
+        <Drawer 
+            title="Корзина" 
+            placement="right" 
+            onClose={() => {
+                setLoading(false)
+                onClose()
+            }} 
+            visible={open}
+        >
             {!!cartItems.length 
                 ? (
                     <>
                         <Row gutter={[16, 16]}>
                             {cartItems.map(item => (
                                 <Col key={item._id} xs={24} style={{ userSelect: 'none' }}>
-                                    <CartItem item={item}  onAddItem={() => onAdd(item._id)} onRemoveItem={() => onRemove(item._id)} />
+                                    <CartItem
+                                        item={item}  
+                                        onAddItem={() => {
+                                            setLoading(true)
+                                            onAdd(item._id)
+                                        }} 
+                                        onRemoveItem={() => {
+                                            setLoading(true)
+                                            onRemove(item._id)}
+                                        } 
+                                    />
                                 </Col>
                             ))}
                         </Row>
@@ -81,7 +101,13 @@ const CartDrawer = ({ open, onClose }) => {
                                 Заказать
                             </Button>
                         </div>
-                        <Order items={expandedItems} visible={showChild} onClose={() => setShowChild(false)} cost={orderCost} omMakeOrder={handleMakeOrder} />
+                        <Order 
+                            items={expandedItems} 
+                            visible={showChild} 
+                            cost={orderCost} 
+                            omMakeOrder={handleMakeOrder} 
+                            onClose={() => setShowChild(false)} 
+                        />
                     </>
                 )
                 : (
@@ -100,8 +126,9 @@ const Order = ({ items = [], visible, onClose, cost, omMakeOrder }) => {
         <Drawer
             title={<OrderTitle progress={progress} />}
             width={320}
-            closable={false}
-            onClose={onClose} visible={visible}
+            closeIcon={<ArrowLeftOutlined />}
+            visible={visible}
+            onClose={onClose} 
         >
             <OrderContainer items={items} cost={cost} setProgress={setProgress} omMakeOrder={omMakeOrder} />
         </Drawer>

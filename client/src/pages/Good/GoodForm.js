@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate, useParams } from "react-router-dom"
 import axios from 'axios'
 
-import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload, Row, Col } from 'antd'
-import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons'
+import { Form, Card, Select, Typography, Input, Button, Modal, InputNumber, Radio, Tooltip, Upload, Row, Col, Switch, Space } from 'antd'
+import { ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined, CloseOutlined, CheckOutlined } from '@ant-design/icons'
 
 import { useConfig } from '../../hooks'
 import { categoriesList, storage, getNowDateString } from '../../helpers'
@@ -29,6 +29,9 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
 
     const [form] = Form.useForm()
     const { setFieldsValue } = form
+  
+    const [allowAttach, setAllowAttach] = useState(good?.allowAttach)
+    const [multiAttach, setMultiAttach] = useState(good?.multiAttach)
 
     const initialValues = {
         images: good?.images ?? [],
@@ -39,6 +42,10 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
         price: good?.price,
         sale: good?.sale,
         productionTime: good?.productionTime,
+        allowAttach: good?.allowAttach ?? false,
+        multiAttach: good?.multiAttach ?? false,
+        checkedAllow: good?.allowAttach ?? false,
+        checkedMulti: good?.multiAttach ?? false,
     }
 
     const handleDeleteConfirm = () => {
@@ -69,7 +76,7 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
                 setFileArray(fileList)
             }).catch(err => console.log(err))
 
-            images = good?.images.filter(i => i.name === file.name)
+            images = good?.images.filter(i => i.name !== file.name)
         }
         else {
             const fileName = getNowDateString() + file.name
@@ -102,7 +109,15 @@ const GoodForm = ({ edit = false, deleteLoading = false, good, onFinish, onDelet
             initialValues={initialValues}
             onFinish={onFinish}
         >
-            <Card title={<CardTitle name={good?.name ?? ''} form={form} />} bordered={false}>
+            <Card 
+                title={<CardTitle
+                    allowAttach={allowAttach}
+                    multiAttach={multiAttach}
+                    setAllowAttach={setAllowAttach}
+                    setMultiAttach={setMultiAttach}
+                />} 
+                bordered={false}
+            >
                 <Typography.Title level={4}>Внешний вид:</Typography.Title>
                 <Form.Item name='imgInfo' >
                     <Upload
@@ -141,7 +156,6 @@ const Characteristics = ({ good, setFieldsValue }) => {
     const [sizeVariant, setSizeVariant] = useState(good?.size ? 'single' : !!good?.sizes.length ? 'multi' : null)
     const [typeVariant, setTypeVariant] = useState(good?.type ? 'single' : !!good?.types.length ? 'multi' : null)
 
-    console.log(good)
     const [sizesCounter, setSizesCounter] = useState(good?.sizes.length > 1 ? good?.sizes.length : 2)
     const [typesCounter, setTypesCounter] = useState(good?.types.length > 1 ? good?.types.length : 2)
 
@@ -218,7 +232,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
                                 <Col xs={4}>
                                     <Form.Item
                                         name={`sizes-cost-${id}`}
-                                        initialValue={good?.sizes[id].cost}
+                                        initialValue={good?.sizes[id]?.cost}
                                         shouldUpdate
                                     >
                                         <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
@@ -261,7 +275,7 @@ const Characteristics = ({ good, setFieldsValue }) => {
                                 <Col xs={4}>
                                     <Form.Item
                                         name={`types-cost-${id}`}
-                                        initialValue={good?.type[id].cost}
+                                        initialValue={good?.type[id]?.cost}
                                         shouldUpdate
                                     >
                                         <InputNumber min={0} prefix="+" addonAfter="&#8381;" style={styles.input} bordered={false} placeholder="0" />
@@ -283,15 +297,12 @@ const Characteristics = ({ good, setFieldsValue }) => {
     )
 }
 
-const CardTitle = ({ form }) => {
-    const { getFieldsValue, setFieldsValue } = form
-    const values = getFieldsValue()
-
+const CardTitle = ({ allowAttach, multiAttach, setAllowAttach, setMultiAttach }) => {
     return (
         <div>
             <Typography.Title level={4}>Категория:</Typography.Title>
             <Form.Item name="category" rules={[{ required: true, message: 'Выберите категорию' }]} >
-                <Select value={values} onChange={value => setFieldsValue('category', value)}>
+                <Select>
                     {categoriesList.map(cat => (
                         <Select.Option key={`${cat.value}-${cat.title}`} value={cat.value}>
                             {cat.title}
@@ -311,16 +322,43 @@ const CardTitle = ({ form }) => {
             </Form.Item>
             <Form.Item
                 name="productionTime"
-                label={<TroductionTimeTooltip />}
+                label={<ProductionTimeTooltip />}
                 style={{ marginTop: 16 }}
             >
                 <Input min={1} style={styles.input} bordered={false} placeholder="Время" />
+            </Form.Item>
+            <Form.Item style={{ display: 'flex' }}>
+                <Space size="middle" wrap>
+                    <Form.Item valuePropName="checkedAllow" name="allowAttach" label="Позволить прикреплять файлы" shouldUpdate>
+                        <Switch
+                            checked={allowAttach}
+                            onChange={setAllowAttach}
+                            checkedChildren={<CheckOutlined />} 
+                            unCheckedChildren={<CloseOutlined />} 
+                        />
+                    </Form.Item>
+                    {allowAttach && (
+                        <Form.Item 
+                            shouldUpdate
+                            valuePropName="checkedMulti" 
+                            name="multiAttach" 
+                            label="Несколько файлов"
+                        >
+                            <Switch 
+                                checked={multiAttach}
+                                onChange={setMultiAttach}
+                                checkedChildren={<CheckOutlined />} 
+                                unCheckedChildren={<CloseOutlined />} 
+                            />
+                        </Form.Item>
+                    )}
+                </Space>
             </Form.Item>
         </div>
     )
 }
 
-const TroductionTimeTooltip = () => {
+const ProductionTimeTooltip = () => {
     const title = (<>
         Вводите время в формате: <br />
         Числовое_значениеТип_тайминга <br />

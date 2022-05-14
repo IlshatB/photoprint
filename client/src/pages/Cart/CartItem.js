@@ -53,6 +53,15 @@ const CartItem = ({ item, onAddItem, onRemoveItem }) => {
                         ) : null )}
                     </Descriptions>
                 )}
+                {!!item?.attachments.length && (
+                    <div style={{ display: 'flex', flexDirection: 'column' }}  onClick={e => e.stopPropagation()}>
+                        {item.attachments.map((a, id) => (
+                            <a key={a.name} href={a.url} target="_blank">{`Вложение №${id + 1}`}</a>
+                        ))}
+                    </div>
+                )
+
+                }
             </Card>
         </Link>
     )

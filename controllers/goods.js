@@ -59,6 +59,7 @@ exports.updateGood = async (req, res, next) => {
         for (const [key, value] of Object.entries(data)) {
             good[key] = value
         }
+
         good.save()
 
         res.status(200).json({

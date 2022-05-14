@@ -10,7 +10,7 @@ exports.fetchCart = async (req, res, next) => {
     try {
         const client = await Client.findById(id).populate({
             path: 'cart.good',
-            select: 'name subDescription price sale images category',
+            select: 'name subDescription price sale images category allowAttach multiAttach',
         })
         
         if (!client) {
@@ -27,7 +27,7 @@ exports.insertItem = async (req, res, next) => {
     const token = (req.headers.authorization ?? '').split(' ')[1]
     const { id: userId } = jwt_decode(token)
 
-    const { characteristics, good } = req.body
+    const { characteristics, good, attachments } = req.body
 
     try {
         const client = await Client.findById(userId)
@@ -35,7 +35,7 @@ exports.insertItem = async (req, res, next) => {
             return res.status(404).send('Пользователь не найден')
         }
 
-        client.cart = [ ...client.cart, { good, characteristics, amount: 1 }]
+        client.cart = [ ...client.cart, { good, characteristics, amount: 1, attachments }]
         await client.save()
 
         return res.status(200).json({ success: true, cartItems: client.cart })

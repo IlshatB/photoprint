@@ -1,10 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useContext } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Layout, Typography, Divider, Breadcrumb, Affix, Badge, Avatar } from 'antd'
 import { ShoppingCartOutlined } from '@ant-design/icons'
 import { blue } from '@ant-design/colors'
 
+import { CartContext } from '../providers'
 import { useCurrentClient, useWindowWidth } from '../hooks'
 import PageSideBar from '../components/PageSideBar/PageSidebar'
 import CartDrawer from '../pages/Cart/CartDrawer'
@@ -12,9 +13,9 @@ import CartDrawer from '../pages/Cart/CartDrawer'
 const withLayout = Component => ({ title = '', paths = [],  ...rest }) => {
     const { cartItems = [] } = useSelector(store => store.client)
     const { isAuthenticated } = useCurrentClient()
+    const { loading } = useContext(CartContext)
     const { width } = useWindowWidth()
-
-    const [openDrawer, setOpenDrawer] = useState(false)
+    const [openDrawer, setOpenDrawer] = useState(loading || false)
 
     const amounts = useMemo(() => {
         let amount = 0

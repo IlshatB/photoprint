@@ -3,7 +3,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import { loadStripe } from '@stripe/stripe-js'
 import axios from 'axios'
 
-import { Button, Spin, Radio, Space, Input, Typography, List, Avatar } from 'antd'
+import { Button, Spin, Radio, Space, Input, Typography, List, Avatar, InputNumber } from 'antd'
 
 import fallback from '../../assets/images/fallback.png'
 
@@ -139,7 +139,11 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
                         <List.Item>
                             <List.Item.Meta 
                                 title={`${item.good.name} x ${item.amount}`} 
-                                description={characteristicsToString(item.characteristics?.filter(c => !!c.value))} 
+                                description={(<div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography.Text>{characteristicsToString(item.characteristics?.filter(c => !!c.value))}</Typography.Text>
+                                    <Attachments attachments={item?.attachments} />
+                                </div>)} 
+                                
                                 avatar={<Avatar src={item.good.images[0]?.url ?? fallback} />} 
                             />
                             <div>
@@ -205,9 +209,10 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
                                 setProgress(70)
                             }
                         }} 
-                        placeholder="Улица (полностью)" 
+                        placeholder="Улица, дом, квартира" 
                     />
-                    <Input
+                    <InputNumber
+                        
                         style={styles.input} 
                         value={zipCode} 
                         onChange={e => {
@@ -264,6 +269,16 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
     )
   }
 
+const Attachments = ({ attachments = [] }) => {
+    return (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {attachments.map((a, id) => (
+                <a key={a.name} href={a.url} target="_blank">{`Вложение №${id + 1}`}</a>
+            ))}
+        </div>
+    )
+} 
+  
 export default OrderContainer
 
 const characteristicsToString = (characteristics) => {
@@ -277,9 +292,6 @@ const characteristicsToString = (characteristics) => {
 const styles = {
     input: {
         marginBottom: 12, 
+        width: '100%',
     }
-}
-
-const getPriceWithSale = (price, sale) => {
-    return sale ? price * (100 - sale) / 100 : ''
 }

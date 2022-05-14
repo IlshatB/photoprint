@@ -11,6 +11,11 @@ const OrderSchema = new mongoose.Schema({
     paymentType: String,
     items: [{
         amount: Number,
+        attachments: [{
+            name: String,
+            url: String,
+            thumbUrl: String,
+        }],
         characteristics: [{
             title: String,
             value: String,

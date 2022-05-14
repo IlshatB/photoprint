@@ -129,7 +129,7 @@ exports.fetch = async (req, res, next) => {
     try {
         const client = await Client.findById(id).populate({
             path: 'cart.good',
-            select: 'name subDescription price sale images category',
+            select: 'name subDescription price sale images category allowAttach multiAttach attachments',
         }).populate({
             path: 'orders',
             select: 'date status cost items address paymentType delivery',
