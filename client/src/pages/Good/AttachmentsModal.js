@@ -1,11 +1,9 @@
 import { useState } from 'react'
 import { Modal, Upload, Form } from 'antd'
 import { useSelector } from 'react-redux'
-import dayjs from 'dayjs'
 
 import { PlusOutlined } from '@ant-design/icons'
 
-import { useCurrentClient } from '../../hooks'
 import { storage } from '../../helpers'
 
 const AttachmentsModal = ({ good, open, setOpen, onOk }) => {
@@ -61,7 +59,7 @@ const AttachmentsModal = ({ good, open, setOpen, onOk }) => {
                 thumbUrl: url
             }
            setAttachments(attachments =>{
-               const found = attachments.some(a => a.name == newFile.name)
+               const found = attachments.some(a => a.name === newFile.name)
                return [...attachments, ...(!found && !!newFile?.name ? [newFile] : [])]
            })
         }

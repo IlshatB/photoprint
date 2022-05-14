@@ -28,7 +28,7 @@ const styles = {
 const GoodItem = ({ good }) => {
     const showBy = useMemo(() => {
         return good?.sizes.some(s => !!s.cost)
-    }, [])
+    }, [good?.sizes])
 
     return (
         <Col xs={24} sm={24} md={12} lg={12} xl={8} style={styles.col}>

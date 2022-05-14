@@ -1,4 +1,4 @@
-import { useEffect, useState, useReducer, useMemo } from 'react'
+import { useEffect, useState, useReducer } from 'react'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
 import axios from 'axios'
@@ -43,10 +43,6 @@ const stripePromise = loadStripe(process.env.REACT_APP_PUBLISHABLE_KEY)
 const OrderContainer = ({ items = [], cost = 0, setProgress, omMakeOrder }) => {
     const [state, dispatch] = useReducer(reducer, initialState)
     const [clientSecret, setClientSecret] = useState("")
-
-    const orderCost = useMemo(() => {
-
-    }, [])
 
     useEffect(() => {
         const getSecret = async () => {
@@ -273,7 +269,7 @@ const Attachments = ({ attachments = [] }) => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column' }}>
             {attachments.map((a, id) => (
-                <a key={a.name} href={a.url} target="_blank">{`Вложение №${id + 1}`}</a>
+                <a key={a.name} href={a.url} rel="noreferrer" target="_blank">{`Вложение №${id + 1}`}</a>
             ))}
         </div>
     )

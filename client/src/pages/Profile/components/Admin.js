@@ -125,7 +125,7 @@ const Item = ({ item }) => {
                     <Descriptions.Item label="Вложения" contentStyle={{ width: '100%' }}>
                         {item.attachments.map((a, id) => (
                             <p key={a.name}>
-                                <a href={a.url} target="_blank">{`Изображение №${id + 1}`}</a>
+                                <a href={a.url} rel="noreferrer" target="_blank">{`Изображение №${id + 1}`}</a>
                             </p>
                         ))}
                     </Descriptions.Item>
