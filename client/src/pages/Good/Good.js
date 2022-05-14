@@ -274,7 +274,11 @@ const Characteristics = ({
                 <Form.Item name="types" label="Типы:">
                     <Radio.Group onChange={e => setSelectedType(e.target.value)} value={selectedType}>
                         <Space direction="vertical">
-                            {types.map(p => <Radio key={p.value} value={p.value}>{p.value}</Radio>)}
+                            {types.map(t => (
+                                <Radio key={t.value} value={t.value}>
+                                    {t.value} <Typography.Text type="secondary">+{t.cost} &#8381;</Typography.Text>
+                                </Radio>
+                            ))}
                         </Space>
                     </Radio.Group>
                 </Form.Item>
