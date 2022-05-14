@@ -91,7 +91,7 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
     const [isLoading, setIsLoading] = useState(false)
   
     const { progress, delivery, country, city, street, zipCode, paymentType } = state
-  
+
     const handleMakeOrder = () => {
         const address = `${country} г. ${city} ул. ${street}, почтовый индекс: ${zipCode}`
         const variables = {
@@ -208,11 +208,10 @@ const Order = ({ clientSecret, items, cost, state, dispatch, omMakeOrder, setPro
                         placeholder="Улица, дом, квартира" 
                     />
                     <InputNumber
-                        
                         style={styles.input} 
                         value={zipCode} 
-                        onChange={e => {
-                            dispatch({ type: 'zipCode', payload: e.target.value })
+                        onChange={val => {
+                            dispatch({ type: 'zipCode', payload: val })
                             if (progress < 90) {
                                 dispatch({ type: 'progress', payload: 90 })
                                 setProgress(90)
