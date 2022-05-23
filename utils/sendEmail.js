@@ -1,9 +1,6 @@
 const nodemailer = require("nodemailer");
 
 const sendEmail = (options) => {
-  console.log("EMAIL_HOST");
-  console.log(process.env.EMAIL_HOST);
-
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: process.env.EMAIL_PORT,
@@ -20,8 +17,6 @@ const sendEmail = (options) => {
     subject: options.subject,
     html: options.text,
   };
-  console.log("EMAIL_HOST");
-  console.log(process.env.EMAIL_HOST);
 
   transporter.sendMail(mailOptions, function (err, info) {
     if (err) console.log(err);
